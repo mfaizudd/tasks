@@ -1,19 +1,18 @@
 import Layout from '@/components/Layout'
+import { useAppContext } from '@/context/state'
 import { auth } from '@/lib/firebase'
-import { User } from 'firebase/auth'
-import { signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "firebase/auth"
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth"
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect } from 'react'
 
 export default function Home() {
-    const [user, setUser] = useState<User | null>(null)
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            setUser(user)
-            router.push('/dashboard')
-        }
-    })
     const router = useRouter()
+    const state = useAppContext()
+    useEffect(() => {
+        if (state.user) {
+            router.push("/dashboard")
+        }
+    }, [state.user])
     let button = <button className="btn btn-primary" onClick={() => signIn()}>Sign In</button>
     function signIn() {
         const provider = new GoogleAuthProvider();
@@ -23,7 +22,7 @@ export default function Home() {
             console.log(error)
         });
     }
-    if (user) {
+    if (state.user) {
         button = <button className="btn btn-primary" onClick={() => signOut(auth)}>Sign Out</button>
     }
     return (

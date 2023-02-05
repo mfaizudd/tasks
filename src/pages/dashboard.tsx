@@ -3,14 +3,14 @@ import Link from "next/link"
 import { onAuthStateChanged, signOut } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { useRouter } from "next/router"
+import { useAppContext } from "@/context/state"
 
 export default function Dashboard() {
     const router = useRouter()
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            router.push("/")
-        }
-    })
+    const state = useAppContext()
+    if (!state.user) {
+        router.push("/")
+    }
 
     return (
         <Layout title="Dashboard">
