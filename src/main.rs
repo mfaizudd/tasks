@@ -13,8 +13,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let args = Args::parse();
     let settings = tasks::config::get_config(&args.environment)?;
     let app_settings = settings.application;
-    let address = format!("{}:{}", app_settings.host, app_settings.port)
-        .parse::<SocketAddr>()?;
+    let address = format!("{}:{}", app_settings.host, app_settings.port).parse::<SocketAddr>()?;
     tasks::run(&address).await?;
     Ok(())
 }
