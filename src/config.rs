@@ -1,19 +1,29 @@
 use std::path::Path;
 
 use anyhow::Result;
-use config::{Config, File};
+use config::{Config, Environment, File};
 use directories::ProjectDirs;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct ApplicationSettings {
     pub host: String,
     pub port: u16,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
+pub struct OauthSettings {
+    pub client_id: String,
+    pub client_secret: String,
+    pub redirect_url: String,
+    pub authorization_url: String,
+    pub token_url: String,
+}
+
+#[derive(Deserialize)]
 pub struct Settings {
     pub application: ApplicationSettings,
+    pub oauth: OauthSettings,
 }
 
 pub fn get_config(environment: &str) -> Result<Settings> {
@@ -34,6 +44,7 @@ pub fn get_config(environment: &str) -> Result<Settings> {
     let settings = Config::builder()
         .add_source(File::from(base_file))
         .add_source(File::from(environment_file).required(false))
+        .add_source(Environment::with_prefix("tasks"))
         .build()?
         .try_deserialize::<Settings>()?;
     Ok(settings)

@@ -14,6 +14,6 @@ async fn main() -> Result<(), anyhow::Error> {
     let settings = tasks::config::get_config(&args.environment)?;
     let app_settings = settings.application;
     let address = format!("{}:{}", app_settings.host, app_settings.port).parse::<SocketAddr>()?;
-    tasks::run(&address).await?;
+    tasks::run(&address, settings.oauth).await?;
     Ok(())
 }
