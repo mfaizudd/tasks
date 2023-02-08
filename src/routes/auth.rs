@@ -5,7 +5,7 @@ use axum::{
 use base64::{engine::general_purpose, Engine};
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
-    ClientSecret, CsrfToken, RedirectUrl, Scope, TokenUrl, TokenResponse,
+    ClientSecret, CsrfToken, RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
 
@@ -72,7 +72,9 @@ pub async fn login_callback(
     State(client): State<BasicClient>,
     Query(request): Query<AuthRequest>,
 ) -> impl IntoResponse {
-    let state = general_purpose::URL_SAFE_NO_PAD.decode(request.state).unwrap();
+    let state = general_purpose::URL_SAFE_NO_PAD
+        .decode(request.state)
+        .unwrap();
     let state = serde_json::from_str::<OauthState>(&String::from_utf8(state).unwrap()).unwrap();
     let token = client
         .exchange_code(AuthorizationCode::new(request.code))
@@ -89,7 +91,6 @@ pub async fn login_callback(
         .unwrap();
 
     let user_info: serde_json::Value = response.json().await.unwrap();
-    println!("{:?}", user_info);
 
     format!(
         "Hello {}! Your email is {}, and you will be redirected to {}",

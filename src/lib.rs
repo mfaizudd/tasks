@@ -1,5 +1,5 @@
 pub mod config;
-mod startup;
 mod routes;
+mod startup;
 
 pub use startup::run;
