@@ -11,6 +11,15 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -18,6 +27,25 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Cache sqlx-cli
+        uses: actions/cache@v2
+        id: cache-sqlx
+        with:
+          path: |
+            ~/.cargo/bin/sqlx
+          key: ${{ runner.os }}-sqlx
+
+      - name: Install sqlx-cli 
+        uses: actions-rs/cargo@v1
+        if: steps.cache-sqlx.outputs.cache-hit == false
+        with:
+          command: install 
+          args: sqlx-cli
+      - name: Migrate database
+        run: |
+          sudo apt-get install libpq-dev -y
+          sqlx database create
+          sqlx migrate run
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -40,6 +68,15 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -47,6 +84,25 @@ jobs:
           toolchain: stable
           override: true
           components: clippy
+      - name: Cache sqlx-cli
+        uses: actions/cache@v2
+        id: cache-sqlx
+        with:
+          path: |
+            ~/.cargo/bin/sqlx
+          key: ${{ runner.os }}-sqlx
+
+      - name: Install sqlx-cli 
+        uses: actions-rs/cargo@v1
+        if: steps.cache-sqlx.outputs.cache-hit == false
+        with:
+          command: install 
+          args: sqlx-cli
+      - name: Migrate database
+        run: |
+          sudo apt-get install libpq-dev -y
+          sqlx database create
+          sqlx migrate run
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
