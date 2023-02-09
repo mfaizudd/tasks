@@ -3,12 +3,14 @@ use std::path::Path;
 use anyhow::Result;
 use config::{Config, Environment, File};
 use directories::ProjectDirs;
+use secrecy::Secret;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-pub struct ApplicationSettings {
+pub struct ServerSettings {
     pub host: String,
     pub port: u16,
+    pub jwt_secret: Secret<String>,
 }
 
 #[derive(Deserialize)]
@@ -21,9 +23,19 @@ pub struct OauthSettings {
 }
 
 #[derive(Deserialize)]
+pub struct DatabaseSettings {
+    pub username: String,
+    pub password: Secret<String>,
+    pub host: String,
+    pub port: u16,
+    pub database: String,
+}
+
+#[derive(Deserialize)]
 pub struct Settings {
-    pub application: ApplicationSettings,
+    pub server: ServerSettings,
     pub oauth: OauthSettings,
+    pub database: DatabaseSettings,
 }
 
 pub fn get_config(environment: &str) -> Result<Settings> {
