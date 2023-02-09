@@ -6,7 +6,7 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use base64::{engine::general_purpose, Engine};
-use chrono::{Utc, Duration};
+use chrono::{Duration, Utc};
 use hyper::StatusCode;
 use jsonwebtoken::{EncodingKey, Header};
 use oauth2::{
@@ -19,9 +19,10 @@ use serde::{Deserialize, Serialize};
 use crate::{
     config::OauthSettings,
     entities::{UserRole, UserType},
+    response::Response,
     services::{dto::UserDto, UserService},
     startup::ApiState,
-    ApiError, response::Response,
+    ApiError,
 };
 
 pub fn oauth_client(settings: OauthSettings) -> Result<BasicClient, anyhow::Error> {
@@ -77,9 +78,9 @@ pub struct AuthRequest {
 #[derive(Deserialize)]
 pub struct UserInfo {
     email: String,
-    email_verified: bool,
-    picture: String,
-    sub: String,
+    _email_verified: bool,
+    _picture: String,
+    _sub: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -142,10 +143,11 @@ pub async fn login_callback(
         &Claims {
             sub: user.id.to_string(),
             iat: Utc::now().timestamp(),
-            exp: (Utc::now() +Duration::hours(24)).timestamp(),
+            exp: (Utc::now() + Duration::hours(24)).timestamp(),
         },
         &EncodingKey::from_secret(api_state.jwt_secret.expose_secret().as_bytes()),
-    ).map_err(|_| anyhow!("Unable to create jwt"))?;
+    )
+    .map_err(|_| anyhow!("Unable to create jwt"))?;
     println!("{}", state.redirect_url);
     Ok(Response::new(token, "Authenticated successfully".to_string(), vec![]).json(StatusCode::OK))
 }

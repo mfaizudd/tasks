@@ -2,8 +2,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::entities::{UserType, UserRole};
-
+use crate::entities::{UserRole, UserType};
 
 #[derive(Deserialize, Validate)]
 pub struct UserDto {

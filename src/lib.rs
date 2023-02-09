@@ -1,10 +1,10 @@
 pub mod config;
-mod routes;
-mod startup;
-mod errors;
-mod services;
-mod response;
 pub mod entities;
+mod errors;
+mod response;
+mod routes;
+mod services;
+mod startup;
 
-pub use startup::run;
 pub use errors::ApiError;
+pub use startup::run;

@@ -16,7 +16,7 @@ impl UserService {
         Self { pool }
     }
 
-    pub async fn get_users(
+    pub async fn _get_users(
         &self,
         limit: i64,
         offset: i64,
@@ -48,7 +48,7 @@ impl UserService {
         Ok(user)
     }
 
-    pub async fn get_user(&self, id: Uuid) -> Result<UserAccount, ApiError> {
+    pub async fn _get_user(&self, id: Uuid) -> Result<UserAccount, ApiError> {
         let user = sqlx::query_as!(
             UserAccount,
             r#"
@@ -113,7 +113,7 @@ impl UserService {
         Ok(user)
     }
 
-    pub async fn update_user(&self, id: Uuid, user: UserDto) -> Result<UserAccount, ApiError> {
+    pub async fn _update_user(&self, id: Uuid, user: UserDto) -> Result<UserAccount, ApiError> {
         let user = sqlx::query_as!(
             UserAccount,
             r#"
@@ -134,7 +134,7 @@ impl UserService {
         Ok(user)
     }
 
-    pub async fn delete_user(&self, id: Uuid) -> Result<(), ApiError> {
+    pub async fn _delete_user(&self, id: Uuid) -> Result<(), ApiError> {
         let _ = sqlx::query!("SELECT id FROM user_accounts WHERE id = $1", id)
             .fetch_one(&*self.pool)
             .await?;

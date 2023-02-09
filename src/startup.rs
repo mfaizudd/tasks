@@ -48,7 +48,7 @@ pub async fn get_db_pool(settings: DatabaseSettings) -> Result<PgPool, anyhow::E
         .host(&settings.host)
         .port(settings.port)
         .username(&settings.username)
-        .password(&settings.password.expose_secret())
+        .password(settings.password.expose_secret())
         .database(&settings.database);
     let pool = PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(2))
