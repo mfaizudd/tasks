@@ -110,7 +110,6 @@ pub async fn login_callback(
         .await
         .map_err(|_| ApiError::BadRequest("Invalid access token".to_string()))?;
 
-    println!("{:?}", response);
     let user_info = response
         .json::<UserInfo>()
         .await
