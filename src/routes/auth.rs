@@ -17,10 +17,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     config::OauthSettings,
+    dto::{Claims, UserDto},
     entities::{UserRole, UserType},
     services::UserService,
     startup::ApiState,
-    ApiError, dto::{UserDto, Claims},
+    ApiError,
 };
 
 pub fn oauth_client(settings: OauthSettings) -> Result<BasicClient, anyhow::Error> {

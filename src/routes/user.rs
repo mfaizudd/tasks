@@ -8,9 +8,11 @@ use axum_macros::debug_handler;
 use hyper::StatusCode;
 
 use crate::{
+    dto::{Claims, PaginationDto},
+    response::Response,
     services::UserService,
     startup::ApiState,
-    ApiError, response::Response, dto::{PaginationDto, Claims},
+    ApiError,
 };
 
 #[debug_handler]
