@@ -51,6 +51,16 @@ pub struct Classroom {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct Student {
+    pub id: Uuid,
+    pub number: String,
+    pub user_id: Uuid,
+    pub classroom_id: Uuid,
+    pub created_at: chrono::DateTime<Utc>,
+    pub updated_at: chrono::DateTime<Utc>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct Task {
     pub id: Uuid,
     pub title: String,
@@ -66,8 +76,17 @@ pub struct Task {
 pub struct TaskAssignment {
     pub id: Uuid,
     pub task_id: Uuid,
-    pub user_id: Uuid,
+    pub student_id: Uuid,
     pub score: i32,
+    pub created_at: chrono::DateTime<Utc>,
+    pub updated_at: chrono::DateTime<Utc>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TeacherInviteCode {
+    pub id: Uuid,
+    pub code: String,
+    pub classroom_id: Uuid,
     pub created_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,
 }

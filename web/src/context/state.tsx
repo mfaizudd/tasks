@@ -1,22 +1,23 @@
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
 import { createContext, useContext, useState } from 'react';
 
 interface Props {
     children?: React.ReactNode;
 }
 
-interface State {
-    user: User | null;
+export interface User {
+    email: string;
 }
 
-const AppContext = createContext<State>({ user: null });
+interface State {
+    user: User | null;
+    setUser: (user: User | null) => void;
+}
+
+const AppContext = createContext<State>({ user: null, setUser: () => { } });
 
 export function AppWrapper({ children }: Props) {
-    const [state, setState] = useState<State>({ user: null });
-    onAuthStateChanged(auth, (user) => {
-        setState({ user });
-    });
+    const [user, setUser] = useState<User | null>(null);
+    const state: State = { user, setUser };
 
     return (
         <AppContext.Provider value={state}>

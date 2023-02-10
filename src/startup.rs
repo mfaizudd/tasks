@@ -9,7 +9,7 @@ use std::{net::SocketAddr, sync::Arc};
 
 use crate::{
     config::{DatabaseSettings, Settings},
-    routes::auth,
+    routes::{auth, user},
 };
 
 pub struct ApiState {
@@ -31,8 +31,14 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
     let auth_routes = Router::new()
         .route("/google", get(auth::google_auth))
         .route("/callback", get(auth::login_callback));
+    let user_routes = Router::new().route("/", get(user::get_users));
     let app = Router::new()
-        .nest("/api", Router::new().nest("/auth", auth_routes))
+        .nest(
+            "/api",
+            Router::new()
+                .nest("/auth", auth_routes)
+                .nest("/user", user_routes),
+        )
         .with_state(Arc::new(state));
 
     println!("Listening on http://{address}");

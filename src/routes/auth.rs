@@ -7,7 +7,6 @@ use axum::{
 };
 use base64::{engine::general_purpose, Engine};
 use chrono::{Duration, Utc};
-use hyper::StatusCode;
 use jsonwebtoken::{EncodingKey, Header};
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
@@ -19,10 +18,9 @@ use serde::{Deserialize, Serialize};
 use crate::{
     config::OauthSettings,
     entities::{UserRole, UserType},
-    response::Response,
-    services::{dto::UserDto, UserService},
+    services::UserService,
     startup::ApiState,
-    ApiError,
+    ApiError, dto::{UserDto, Claims},
 };
 
 pub fn oauth_client(settings: OauthSettings) -> Result<BasicClient, anyhow::Error> {
@@ -61,33 +59,34 @@ pub async fn google_auth(
     let (auth_url, _csrf_token) = api_state
         .oauth_client
         .authorize_url(|| state)
-        .add_scope(Scope::new(
-            "https://www.googleapis.com/auth/userinfo.email".to_string(),
-        ))
+        .add_scope(Scope::new("email".to_string()))
         .url();
     Ok(Redirect::to(auth_url.as_str()))
 }
 
 #[derive(Deserialize)]
-#[allow(dead_code)]
 pub struct AuthRequest {
     code: String,
     state: String,
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 pub struct UserInfo {
     email: String,
-    _email_verified: bool,
-    _picture: String,
-    _sub: String,
+    email_verified: bool,
+    picture: String,
+    sub: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Claims {
-    pub exp: i64,
-    pub iat: i64,
-    pub sub: String,
+fn decode_oauth_state(state: String) -> Result<OauthState, ApiError> {
+    let state = general_purpose::URL_SAFE_NO_PAD
+        .decode(state)
+        .map_err(|_| ApiError::BadRequest("Invalid state".to_string()))?;
+    let state = serde_json::from_str::<OauthState>(
+        &String::from_utf8(state).map_err(|_| ApiError::BadRequest("Invalid state".to_string()))?,
+    )?;
+    Ok(state)
 }
 
 #[axum_macros::debug_handler]
@@ -95,12 +94,7 @@ pub async fn login_callback(
     State(api_state): State<Arc<ApiState>>,
     Query(request): Query<AuthRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let state = general_purpose::URL_SAFE_NO_PAD
-        .decode(request.state)
-        .map_err(|_| ApiError::BadRequest("Invalid state".to_string()))?;
-    let state = serde_json::from_str::<OauthState>(
-        &String::from_utf8(state).map_err(|_| ApiError::BadRequest("Invalid state".to_string()))?,
-    )?;
+    let state = decode_oauth_state(request.state)?;
     let client = api_state.oauth_client.clone();
     let token = client
         .exchange_code(AuthorizationCode::new(request.code))
@@ -114,12 +108,13 @@ pub async fn login_callback(
         .bearer_auth(token.access_token().secret())
         .send()
         .await
-        .map_err(|_| ApiError::BadRequest("Invalid code".to_string()))?;
+        .map_err(|_| ApiError::BadRequest("Invalid access token".to_string()))?;
 
+    println!("{:?}", response);
     let user_info = response
         .json::<UserInfo>()
         .await
-        .map_err(|_| ApiError::BadRequest("Invalid code".to_string()))?;
+        .map_err(|_| ApiError::BadRequest("Invalid oauth response".to_string()))?;
 
     let service = UserService::new(api_state.db_pool.clone());
     let user = service.get_user_by_email(user_info.email.clone()).await?;
@@ -148,6 +143,8 @@ pub async fn login_callback(
         &EncodingKey::from_secret(api_state.jwt_secret.expose_secret().as_bytes()),
     )
     .map_err(|_| anyhow!("Unable to create jwt"))?;
-    println!("{}", state.redirect_url);
-    Ok(Response::new(token, "Authenticated successfully".to_string(), vec![]).json(StatusCode::OK))
+    Ok(Redirect::to(&format!(
+        "{}?token={}",
+        state.redirect_url, token
+    )))
 }

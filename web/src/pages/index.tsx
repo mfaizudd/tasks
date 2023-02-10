@@ -1,23 +1,21 @@
 import Layout from '@/components/Layout'
 import { useAppContext } from '@/context/state'
-import { auth } from '@/lib/firebase'
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from "firebase/auth"
+import { removeToken } from '@/lib/api'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
 
 export default function Home() {
     const router = useRouter()
-    const [provider] = useState(new GoogleAuthProvider());
+    const { user, setUser } = useAppContext()
     let button = <button className="btn btn-primary" onClick={() => signIn()}>Sign In</button>
-    const [user, setUser] = useState<User | null>(null)
-    onAuthStateChanged(auth, (user) => {
-        setUser(user)
-    })
     if (user !== null) {
-        button = <button className="btn btn-primary" onClick={() => signOut(auth)}>Sign Out</button>
+        button = <button className="btn btn-primary" onClick={() => signOut()}>Sign Out</button>
     }
-    const signIn = async () => {
-        signInWithPopup(auth, provider)
+    function signOut() {
+        removeToken()
+        setUser(null)
+    }
+    function signIn() {
+        router.push('http://localhost:8000/api/auth/google?redirect_url=http://localhost:3000/login')
     }
     return (
         <Layout>

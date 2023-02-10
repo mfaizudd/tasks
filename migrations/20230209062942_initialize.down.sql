@@ -1,6 +1,8 @@
 -- Add down migration script here
+DROP TABLE IF EXISTS "teacher_invite_codes";
 DROP TABLE IF EXISTS "task_assignments";
 DROP TABLE IF EXISTS "tasks";
+DROP TABLE IF EXISTS "students";
 DROP TABLE IF EXISTS "classrooms";
 DROP TABLE IF EXISTS "user_password";
 DROP TABLE IF EXISTS "user_accounts";

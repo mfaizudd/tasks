@@ -3,9 +3,7 @@ use std::sync::Arc;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::{entities::UserAccount, ApiError};
-
-use super::dto::UserDto;
+use crate::{dto::UserDto, entities::UserAccount, ApiError};
 
 pub struct UserService {
     pool: Arc<PgPool>,
@@ -16,7 +14,7 @@ impl UserService {
         Self { pool }
     }
 
-    pub async fn _get_users(
+    pub async fn get_users(
         &self,
         limit: i64,
         offset: i64,
