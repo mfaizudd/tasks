@@ -46,7 +46,7 @@ impl UserService {
         Ok(user)
     }
 
-    pub async fn _get_user(&self, id: Uuid) -> Result<UserAccount, ApiError> {
+    pub async fn get_user(&self, id: Uuid) -> Result<UserAccount, ApiError> {
         let user = sqlx::query_as!(
             UserAccount,
             r#"

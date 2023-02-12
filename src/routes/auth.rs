@@ -7,6 +7,7 @@ use axum::{
 };
 use base64::{engine::general_purpose, Engine};
 use chrono::{Duration, Utc};
+use hyper::StatusCode;
 use jsonwebtoken::{EncodingKey, Header};
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
@@ -21,7 +22,7 @@ use crate::{
     entities::{UserRole, UserType},
     services::UserService,
     startup::ApiState,
-    ApiError,
+    ApiError, response::Response,
 };
 
 pub fn oauth_client(settings: OauthSettings) -> Result<BasicClient, anyhow::Error> {
@@ -147,4 +148,20 @@ pub async fn login_callback(
         "{}?token={}",
         state.redirect_url, token
     )))
+}
+
+pub async fn info(
+    claims: Claims,
+    State(api_state): State<Arc<ApiState>>,
+) -> Result<impl IntoResponse, ApiError> {
+    let user_service = UserService::new(api_state.db_pool.clone());
+    let user = user_service
+        .get_user(
+            claims
+                .sub
+                .parse()
+                .map_err(|_| ApiError::BadRequest("Invalid user id".to_string()))?,
+        )
+        .await?;
+    Ok(Response::new(user, "User retrieved successfully".to_string(), vec![]).json(StatusCode::OK))
 }

@@ -30,7 +30,8 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
     };
     let auth_routes = Router::new()
         .route("/google", get(auth::google_auth))
-        .route("/callback", get(auth::login_callback));
+        .route("/callback", get(auth::login_callback))
+        .route("/info", get(auth::info));
     let user_routes = Router::new().route("/", get(user::get_users));
     let app = Router::new()
         .nest(
