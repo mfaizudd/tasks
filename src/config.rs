@@ -14,15 +14,6 @@ pub struct ServerSettings {
 }
 
 #[derive(Deserialize)]
-pub struct OauthSettings {
-    pub client_id: String,
-    pub client_secret: String,
-    pub redirect_url: String,
-    pub authorization_url: String,
-    pub token_url: String,
-}
-
-#[derive(Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
     pub password: Secret<String>,
@@ -34,7 +25,6 @@ pub struct DatabaseSettings {
 #[derive(Deserialize)]
 pub struct Settings {
     pub server: ServerSettings,
-    pub oauth: OauthSettings,
     pub database: DatabaseSettings,
 }
 

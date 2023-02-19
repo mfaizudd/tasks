@@ -19,6 +19,35 @@ pub struct Claims {
     pub sub: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RefreshClaims {
+    pub exp: i64,
+    pub iat: i64,
+    pub sub: String,
+    pub jti: String,
+}
+
+#[derive(Deserialize)]
+pub struct AuthRequest {
+    pub access_token: String,
+}
+
+#[derive(Serialize)]
+pub struct AuthResponse {
+    pub access_token: String,
+    pub refresh_token: String,
+}
+
+#[derive(Deserialize)]
+#[allow(dead_code)]
+pub struct UserInfo {
+    pub email: String,
+    pub email_verified: bool,
+    pub picture: String,
+    pub sub: String,
+}
+
+
 #[async_trait]
 impl FromRequestParts<Arc<ApiState>> for Claims {
     type Rejection = ApiError;
