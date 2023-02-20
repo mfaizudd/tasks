@@ -10,7 +10,7 @@ use jsonwebtoken::{DecodingKey, Validation};
 use secrecy::ExposeSecret;
 use serde::{Deserialize, Serialize};
 
-use crate::{startup::ApiState, ApiError};
+use crate::{startup::ApiState, ApiError, services::AuthService};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -66,9 +66,11 @@ impl FromRequestParts<Arc<ApiState>> for Claims {
             TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state)
                 .await
                 .map_err(|_| reject())?;
-        let key = &DecodingKey::from_secret(state.jwt_secret.expose_secret().as_bytes());
-        let token = jsonwebtoken::decode::<Claims>(bearer.token(), key, &Validation::default())
+        let auth_service = AuthService::new(state.clone());
+        let claims = auth_service
+            .verify_access_token(bearer.token())
+            .await
             .map_err(|_| reject())?;
-        Ok(token.claims)
+        Ok(claims)
     }
 }
