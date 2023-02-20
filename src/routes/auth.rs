@@ -4,7 +4,7 @@ use axum::{extract::State, response::IntoResponse, Json};
 use hyper::StatusCode;
 
 use crate::{
-    dto::{AuthRequest, Claims},
+    dto::{AuthRequest, Claims, RefreshRequest},
     response::Response,
     services::{AuthService, UserService},
     startup::ApiState,
@@ -18,7 +18,7 @@ pub async fn google(
 ) -> Result<impl IntoResponse, ApiError> {
     let auth_service = AuthService::new(api_state);
     let auth_response = auth_service
-        .auth_google(auth_request.refresh_token.as_str())
+        .auth_google(auth_request.access_token.as_str())
         .await?;
     Ok(Response::new(
         auth_response,
@@ -46,10 +46,10 @@ pub async fn info(
 
 pub async fn refresh(
     State(api_state): State<Arc<ApiState>>,
-    Json(auth_request): Json<AuthRequest>,
+    Json(refresh_request): Json<RefreshRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let auth_service = AuthService::new(api_state);
-    let auth_response = auth_service.refresh(&auth_request.refresh_token).await?;
+    let auth_response = auth_service.refresh(&refresh_request.refresh_token).await?;
     Ok(
         Response::new(auth_response, "Refreshed successfully".to_string(), vec![])
             .json(StatusCode::OK),
