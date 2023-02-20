@@ -1,15 +1,13 @@
 use std::sync::Arc;
 
-use anyhow::anyhow;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{EncodingKey, Header, DecodingKey, Validation};
 use secrecy::ExposeSecret;
-use serde::{Deserialize, de::DeserializeOwned};
+use serde::de::DeserializeOwned;
 use uuid::Uuid;
 
 use crate::{
-    dto::{AuthResponse, Claims, UserDto, UserInfo, RefreshClaims},
-    entities::{UserRole, UserType},
+    dto::{AuthResponse, Claims, UserInfo, RefreshClaims},
     startup::ApiState,
     ApiError,
 };

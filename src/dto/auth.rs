@@ -6,8 +6,6 @@ use axum::{
     headers::{authorization::Bearer, Authorization},
     http::request::Parts,
 };
-use jsonwebtoken::{DecodingKey, Validation};
-use secrecy::ExposeSecret;
 use serde::{Deserialize, Serialize};
 
 use crate::{startup::ApiState, ApiError, services::AuthService};
