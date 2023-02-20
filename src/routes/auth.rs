@@ -1,16 +1,12 @@
 use std::sync::Arc;
 
-use axum::{
-    extract::State,
-    response::IntoResponse,
-    Json,
-};
+use axum::{extract::State, response::IntoResponse, Json};
 use hyper::StatusCode;
 
 use crate::{
-    dto::{Claims, AuthRequest},
+    dto::{AuthRequest, Claims},
     response::Response,
-    services::{UserService, AuthService},
+    services::{AuthService, UserService},
     startup::ApiState,
     ApiError,
 };
@@ -21,7 +17,9 @@ pub async fn google(
     Json(auth_request): Json<AuthRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let auth_service = AuthService::new(api_state);
-    let auth_response = auth_service.auth_google(auth_request.access_token.as_str()).await?;
+    let auth_response = auth_service
+        .auth_google(auth_request.refresh_token.as_str())
+        .await?;
     Ok(Response::new(
         auth_response,
         "Authenticated successfully".to_string(),
@@ -46,7 +44,14 @@ pub async fn info(
     Ok(Response::new(user, "User retrieved successfully".to_string(), vec![]).json(StatusCode::OK))
 }
 
-// pub async fn refresh(
-//     State(api_state): State<Arc<ApiState>>,
-// ) -> Result<impl IntoResponse, ApiError> {
-// }
+pub async fn refresh(
+    State(api_state): State<Arc<ApiState>>,
+    Json(auth_request): Json<AuthRequest>,
+) -> Result<impl IntoResponse, ApiError> {
+    let auth_service = AuthService::new(api_state);
+    let auth_response = auth_service.refresh(&auth_request.refresh_token).await?;
+    Ok(
+        Response::new(auth_response, "Refreshed successfully".to_string(), vec![])
+            .json(StatusCode::OK),
+    )
+}

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use anyhow::anyhow;
 use chrono::{Duration, Utc};
-use jsonwebtoken::{EncodingKey, Header};
+use jsonwebtoken::{EncodingKey, Header, DecodingKey, Validation};
 use secrecy::ExposeSecret;
 use uuid::Uuid;
 
@@ -71,12 +71,45 @@ impl AuthService {
             &RefreshClaims {
                 sub: user.id.to_string(),
                 iat: Utc::now().timestamp(),
-                exp: (Utc::now() + Duration::days(30)).timestamp(),
+                exp: (Utc::now() + Duration::days(7)).timestamp(),
                 jti: Uuid::new_v4().to_string(),
             },
             &EncodingKey::from_secret(self.api_state.jwt_secret.expose_secret().as_bytes()),
         )
         .map_err(|_| anyhow!("Unable to create refresh token"))?;
+        let auth_response = AuthResponse {
+            access_token,
+            refresh_token,
+        };
+        Ok(auth_response)
+    }
+
+    pub async fn refresh(&self, refresh_token: &str) -> Result<AuthResponse, ApiError> {
+        let key = &DecodingKey::from_secret(self.api_state.jwt_secret.expose_secret().as_bytes());
+        let claims = jsonwebtoken::decode::<RefreshClaims>(
+            refresh_token,
+            key,
+            &Validation::default(),
+        ).map_err(|_| ApiError::AuthorizationError("Unauthorized".to_string()))?.claims;
+        let access_token = jsonwebtoken::encode(
+            &Header::default(),
+            &Claims {
+                sub: claims.sub.clone(),
+                iat: Utc::now().timestamp(),
+                exp: (Utc::now() + Duration::minutes(15)).timestamp(),
+            },
+            &EncodingKey::from_secret(self.api_state.jwt_secret.expose_secret().as_bytes()),
+        ).map_err(|_| ApiError::AuthorizationError("Unable to create access token".to_string()))?;
+        let refresh_token = jsonwebtoken::encode(
+            &Header::default(),
+            &RefreshClaims {
+                sub: claims.sub.clone(),
+                iat: Utc::now().timestamp(),
+                exp: (Utc::now() + Duration::days(7)).timestamp(),
+                jti: Uuid::new_v4().to_string(),
+            },
+            &EncodingKey::from_secret(self.api_state.jwt_secret.expose_secret().as_bytes()),
+        ).map_err(|_| ApiError::AuthorizationError("Unable to create refresh token".to_string()))?;
         let auth_response = AuthResponse {
             access_token,
             refresh_token,

@@ -29,13 +29,18 @@ pub struct RefreshClaims {
 
 #[derive(Deserialize)]
 pub struct AuthRequest {
-    pub access_token: String,
+    pub refresh_token: String,
 }
 
 #[derive(Serialize)]
 pub struct AuthResponse {
     pub access_token: String,
     pub refresh_token: String,
+}
+
+#[derive(Deserialize)]
+pub struct RefreshRequest {
+    pub refresh_token: String
 }
 
 #[derive(Deserialize)]
