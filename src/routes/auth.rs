@@ -4,21 +4,21 @@ use axum::{extract::State, response::IntoResponse, Json};
 use hyper::StatusCode;
 
 use crate::{
-    dto::{AuthRequest, Claims, RefreshRequest},
+    dto::{AuthRequest, Claims, RefreshRequest, StudentRegisterRequest},
     response::Response,
-    services::{AuthService, UserService},
+    services::{AuthService, ClassroomService, UserService},
     startup::ApiState,
     ApiError,
 };
 
 #[axum_macros::debug_handler]
-pub async fn google(
+pub async fn login_google(
     State(api_state): State<Arc<ApiState>>,
     Json(auth_request): Json<AuthRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let auth_service = AuthService::new(api_state);
     let auth_response = auth_service
-        .auth_google(auth_request.access_token.as_str())
+        .login_google(auth_request.access_token.as_str())
         .await?;
     Ok(Response::new(
         auth_response,
@@ -26,6 +26,25 @@ pub async fn google(
         vec![],
     )
     .json(StatusCode::OK))
+}
+
+pub async fn register_student_google(
+    State(api_state): State<Arc<ApiState>>,
+    Json(register_request): Json<StudentRegisterRequest>,
+) -> Result<impl IntoResponse, ApiError> {
+    let auth_service = AuthService::new(api_state.clone());
+    let classroom_service = ClassroomService::new(api_state.db_pool.clone());
+    let invited_classroom = classroom_service
+        .get_classroom_by_invite_code(register_request.invite_code)
+        .await?;
+    invited_classroom.ok_or(ApiError::BadRequest("Invalid invite code".to_string()))?;
+    let auth_response = auth_service
+        .register_student_google(register_request.access_token.as_str())
+        .await?;
+    Ok(
+        Response::new(auth_response, "Registered successfully".to_string(), vec![])
+            .json(StatusCode::OK),
+    )
 }
 
 pub async fn info(

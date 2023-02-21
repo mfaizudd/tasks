@@ -1,6 +1,8 @@
+mod auth;
+mod classroom;
 pub mod dto;
 mod user;
-mod auth;
 
-pub use user::*;
 pub use auth::*;
+pub use classroom::*;
+pub use user::*;

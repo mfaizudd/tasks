@@ -8,7 +8,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{startup::ApiState, ApiError, services::AuthService};
+use crate::{services::AuthService, startup::ApiState, ApiError};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -30,6 +30,12 @@ pub struct AuthRequest {
     pub access_token: String,
 }
 
+#[derive(Deserialize)]
+pub struct StudentRegisterRequest {
+    pub access_token: String,
+    pub invite_code: String,
+}
+
 #[derive(Serialize)]
 pub struct AuthResponse {
     pub access_token: String,
@@ -38,7 +44,7 @@ pub struct AuthResponse {
 
 #[derive(Deserialize)]
 pub struct RefreshRequest {
-    pub refresh_token: String
+    pub refresh_token: String,
 }
 
 #[derive(Deserialize)]
@@ -49,7 +55,6 @@ pub struct UserInfo {
     pub picture: String,
     pub sub: String,
 }
-
 
 #[async_trait]
 impl FromRequestParts<Arc<ApiState>> for Claims {

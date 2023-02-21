@@ -1,4 +1,7 @@
-use axum::{routing::{get, post}, Router};
+use axum::{
+    routing::{get, post},
+    Router,
+};
 use secrecy::{ExposeSecret, Secret};
 use sqlx::{
     postgres::{PgConnectOptions, PgPoolOptions},
@@ -25,7 +28,11 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         jwt_secret: settings.server.jwt_secret,
     };
     let auth_routes = Router::new()
-        .route("/google", post(auth::google))
+        .route("/login/google", post(auth::login_google))
+        .route(
+            "/register/student/google",
+            post(auth::register_student_google),
+        )
         .route("/refresh", post(auth::refresh))
         .route("/info", get(auth::info));
     let user_routes = Router::new().route("/", get(user::get_users));

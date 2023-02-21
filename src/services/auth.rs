@@ -1,13 +1,14 @@
 use std::sync::Arc;
 
 use chrono::{Duration, Utc};
-use jsonwebtoken::{EncodingKey, Header, DecodingKey, Validation};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use secrecy::ExposeSecret;
 use serde::de::DeserializeOwned;
 use uuid::Uuid;
 
 use crate::{
-    dto::{AuthResponse, Claims, UserInfo, RefreshClaims},
+    dto::{AuthResponse, Claims, RefreshClaims, UserDto, UserInfo},
+    entities::{UserRole, UserType},
     startup::ApiState,
     ApiError,
 };
@@ -22,7 +23,7 @@ impl AuthService {
     pub fn new(api_state: Arc<ApiState>) -> Self {
         Self { api_state }
     }
-    
+
     async fn verify_google_user(&self, token: &str) -> Result<UserInfo, ApiError> {
         let client = reqwest::Client::new();
         let response = client
@@ -54,11 +55,9 @@ impl AuthService {
 
     fn decode_token<T: DeserializeOwned>(&self, refresh_token: &str) -> Result<T, ApiError> {
         let key = &DecodingKey::from_secret(self.api_state.jwt_secret.expose_secret().as_bytes());
-        let claims = jsonwebtoken::decode::<T>(
-            refresh_token,
-            key,
-            &Validation::default(),
-        ).map_err(|_| ApiError::AuthorizationError("Unauthorized".to_string()))?.claims;
+        let claims = jsonwebtoken::decode::<T>(refresh_token, key, &Validation::default())
+            .map_err(|_| ApiError::AuthorizationError("Unauthorized".to_string()))?
+            .claims;
         Ok(claims)
     }
 
@@ -75,7 +74,7 @@ impl AuthService {
             .expect("Failed to generate refresh token")
     }
 
-    pub async fn auth_google(&self, token: &str) -> Result<AuthResponse, ApiError> {
+    pub async fn login_google(&self, token: &str) -> Result<AuthResponse, ApiError> {
         let user_info = self.verify_google_user(token).await?;
         let service = UserService::new(self.api_state.db_pool.clone());
         let user = service.get_user_by_email(user_info.email.clone()).await?;
@@ -96,10 +95,38 @@ impl AuthService {
         Ok(auth_response)
     }
 
+    pub async fn register_student_google(&self, token: &str) -> Result<AuthResponse, ApiError> {
+        let user_info = self.verify_google_user(token).await?;
+        let service = UserService::new(self.api_state.db_pool.clone());
+        let user = service.get_user_by_email(user_info.email.clone()).await?;
+
+        let user = match user {
+            Some(user) => user,
+            None => {
+                let user_dto = UserDto {
+                    email: user_info.email.clone(),
+                    name: user_info.email.clone(),
+                    role: UserRole::Student,
+                    user_type: UserType::Google,
+                };
+                let user = service.create_user(user_dto).await?;
+                user
+            }
+        };
+
+        let access_token = self.generate_access_token(user.id.to_string());
+        let refresh_token = self.generate_refresh_token(user.id.to_string());
+        let auth_response = AuthResponse {
+            access_token,
+            refresh_token,
+        };
+        Ok(auth_response)
+    }
+
     pub async fn refresh(&self, refresh_token: &str) -> Result<AuthResponse, ApiError> {
         let claims = self.decode_token::<RefreshClaims>(refresh_token)?;
         let access_token = self.generate_access_token(claims.sub.clone());
-        let refresh_token = self.generate_refresh_token(claims.sub.clone());
+        let refresh_token = self.generate_refresh_token(claims.sub);
         let auth_response = AuthResponse {
             access_token,
             refresh_token,
