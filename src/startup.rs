@@ -11,7 +11,7 @@ use std::{net::SocketAddr, sync::Arc};
 
 use crate::{
     config::{DatabaseSettings, Settings},
-    routes::{auth, user},
+    routes::{auth, user}, services::UserService, dto::UserDto, entities::UserRole,
 };
 
 pub struct ApiState {
@@ -22,9 +22,20 @@ pub struct ApiState {
 pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
     let address =
         format!("{}:{}", settings.server.host, settings.server.port).parse::<SocketAddr>()?;
-    let db_pool = get_db_pool(settings.database).await?;
+    let db_pool = Arc::new(get_db_pool(settings.database).await?);
+    let user_service = UserService::new(db_pool.clone());
+    let admin = user_service.get_user_by_email(settings.admin.email.clone()).await?;
+    if admin.is_none() {
+        user_service.create_user(UserDto {
+            name: "Admin".to_string(),
+            role: UserRole::Admin,
+            email: settings.admin.email,
+            user_type: settings.admin.user_type,
+            password: None
+        }).await?;
+    }
     let state = ApiState {
-        db_pool: Arc::new(db_pool),
+        db_pool: db_pool.clone(),
         jwt_secret: settings.server.jwt_secret,
     };
     let auth_routes = Router::new()

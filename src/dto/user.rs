@@ -12,6 +12,7 @@ pub struct UserDto {
     pub email: String,
     pub user_type: UserType,
     pub role: UserRole,
+    pub password: Option<String>,
 }
 
 #[derive(Deserialize, Validate)]

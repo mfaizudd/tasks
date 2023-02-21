@@ -108,6 +108,7 @@ impl AuthService {
                     name: user_info.email.clone(),
                     role: UserRole::Student,
                     user_type: UserType::Google,
+                    password: None
                 };
                 let user = service.create_user(user_dto).await?;
                 user
