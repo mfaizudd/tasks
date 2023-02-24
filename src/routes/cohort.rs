@@ -7,10 +7,11 @@ use axum::{
 use hyper::StatusCode;
 use uuid::Uuid;
 
-use crate::dto::CohortRequest;
+use crate::dto::{Claims, CohortRequest};
 use crate::{entities::Cohort, response::Response, startup::ApiState, ApiError};
 
 pub async fn list_cohorts(
+    _: Claims,
     State(state): State<Arc<ApiState>>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohorts = sqlx::query_as!(Cohort, "SELECT * FROM cohorts")

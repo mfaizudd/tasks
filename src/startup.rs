@@ -1,5 +1,5 @@
 use axum::{routing::get, Router};
-use secrecy::{ExposeSecret, Secret};
+use secrecy::ExposeSecret;
 use sqlx::{
     postgres::{PgConnectOptions, PgPoolOptions},
     PgPool,
@@ -7,13 +7,13 @@ use sqlx::{
 use std::{net::SocketAddr, sync::Arc};
 
 use crate::{
-    config::{DatabaseSettings, Settings},
+    config::{DatabaseSettings, Settings, OauthSettings},
     routes,
 };
 
 pub struct ApiState {
     pub db_pool: Arc<PgPool>,
-    pub jwt_secret: Secret<String>,
+    pub oauth_settings: Arc<OauthSettings>,
 }
 
 pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
@@ -22,7 +22,7 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
     let db_pool = Arc::new(get_db_pool(settings.database).await?);
     let state = ApiState {
         db_pool: db_pool.clone(),
-        jwt_secret: settings.server.jwt_secret,
+        oauth_settings: Arc::new(settings.oauth),
     };
     let cohort_routes = Router::new().route("/", get(routes::list_cohorts));
     let app = Router::new()

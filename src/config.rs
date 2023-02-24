@@ -14,6 +14,13 @@ pub struct ServerSettings {
 }
 
 #[derive(Deserialize)]
+pub struct OauthSettings {
+    pub issuer: String,
+    pub audience: String,
+    pub jwks_url: String,
+}
+
+#[derive(Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
     pub password: Secret<String>,
@@ -26,6 +33,7 @@ pub struct DatabaseSettings {
 pub struct Settings {
     pub server: ServerSettings,
     pub database: DatabaseSettings,
+    pub oauth: OauthSettings,
 }
 
 pub fn get_config(environment: &str) -> Result<Settings> {
