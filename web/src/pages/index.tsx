@@ -1,6 +1,7 @@
 import Layout from '@/components/Layout'
 import { useAppContext } from '@/context/state'
 import { removeToken } from '@/lib/api'
+import { oauthSignIn } from '@/lib/oauth'
 import { useRouter } from 'next/router'
 
 export default function Home() {
@@ -15,7 +16,7 @@ export default function Home() {
         setUser(null)
     }
     function signIn() {
-        router.push('http://localhost:8000/api/auth/google?redirect_url=http://localhost:3000/login')
+        oauthSignIn()
     }
     return (
         <Layout>
