@@ -1,7 +1,7 @@
 mod auth;
-mod request;
 mod cohort;
+mod request;
 
 pub use auth::*;
-pub use request::*;
 pub use cohort::*;
+pub use request::*;

@@ -5,7 +5,7 @@ use sqlx::{
     PgPool,
 };
 use std::{net::SocketAddr, sync::Arc};
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 
 use crate::{
     config::{DatabaseSettings, OauthSettings, Settings},

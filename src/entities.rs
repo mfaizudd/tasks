@@ -38,4 +38,3 @@ pub struct AssignmentScore {
     pub created_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,
 }
-
