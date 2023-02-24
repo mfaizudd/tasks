@@ -1,6 +1,7 @@
 use axum::{response::IntoResponse, Json};
 use derive_more::Display;
 use hyper::StatusCode;
+use jsonwebtoken::errors::ErrorKind;
 use serde::{ser::SerializeStruct, Serialize};
 use thiserror::Error;
 use validator::ValidationError;
@@ -54,6 +55,25 @@ impl From<serde_json::Error> for ApiError {
 impl From<anyhow::Error> for ApiError {
     fn from(err: anyhow::Error) -> Self {
         ApiError::InternalError(err.into())
+    }
+}
+
+impl From<jsonwebtoken::errors::Error> for ApiError {
+    fn from(err: jsonwebtoken::errors::Error) -> Self {
+        match err.kind() {
+            ErrorKind::ExpiredSignature => {
+                ApiError::AuthorizationError("Token expired".to_string())
+            }
+            ErrorKind::InvalidToken => ApiError::AuthorizationError("Invalid token".to_string()),
+            ErrorKind::InvalidIssuer => ApiError::AuthorizationError("Invalid issuer".to_string()),
+            ErrorKind::InvalidAudience => {
+                ApiError::AuthorizationError("Invalid audience".to_string())
+            }
+            err => {
+                println!("Error: {:?}", err);
+                ApiError::AuthorizationError("Invalid token".to_string())
+            }
+        }
     }
 }
 

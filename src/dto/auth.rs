@@ -13,7 +13,7 @@ use jsonwebtoken::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{auth::verify_access_token, startup::ApiState, ApiError};
+use crate::{startup::ApiState, ApiError};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -22,9 +22,7 @@ pub struct Claims {
     pub aud: String,
     pub exp: i64,
     pub iat: i64,
-    pub auth_time: i64,
     pub acr: String,
-    pub amr: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -84,15 +82,15 @@ impl FromRequestParts<Arc<ApiState>> for Claims {
             AlgorithmParameters::RSA(rsa) => {
                 let decoding_key =
                     DecodingKey::from_rsa_components(&rsa.n, &rsa.e).map_err(|_| reject())?;
-                let validation = Validation::new(jwk.common.algorithm.unwrap());
-                let claims = decode::<Claims>(bearer.token(), &decoding_key, &validation)
-                    .map_err(|_| reject())?
-                    .claims;
+                let mut validation = Validation::new(jwk.common.algorithm.unwrap());
+                validation.set_audience(&[&state.oauth_settings.audience]);
+                validation.set_issuer(&[&state.oauth_settings.issuer]);
+                let claims = decode::<Claims>(bearer.token(), &decoding_key, &validation)?.claims;
                 claims
             }
             _ => return Err(reject()),
         };
-        println!("{:?}", claims);
+        println!("claims: {:?}", claims);
         Ok(claims)
     }
 }

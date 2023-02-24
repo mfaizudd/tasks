@@ -5,9 +5,10 @@ use sqlx::{
     PgPool,
 };
 use std::{net::SocketAddr, sync::Arc};
+use tower_http::cors::{Any, CorsLayer};
 
 use crate::{
-    config::{DatabaseSettings, Settings, OauthSettings},
+    config::{DatabaseSettings, OauthSettings, Settings},
     routes,
 };
 
@@ -27,6 +28,7 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
     let cohort_routes = Router::new().route("/", get(routes::list_cohorts));
     let app = Router::new()
         .nest("/api/v1", Router::new().nest("/cohorts", cohort_routes))
+        .layer(CorsLayer::permissive())
         .with_state(Arc::new(state));
 
     println!("Listening on http://{address}");
