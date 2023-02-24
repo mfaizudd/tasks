@@ -1,3 +1,14 @@
 server:
   port: 8000
   host: 0.0.0.0
+  allowed_origins: ["http://localhost:3000"]
+oauth:
+  issuer: http://auth.company/
+  audience: audience
+  jwks_url: http://auth.company/jwks
+database:
+  username: postgres
+  password: postgres
+  host: localhost
+  port: 5432
+  database: tasks

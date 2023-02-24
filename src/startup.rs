@@ -1,4 +1,5 @@
-use axum::{routing::get, Router};
+use axum::{http::HeaderValue, routing::get, Router};
+use hyper::{header, Method};
 use secrecy::ExposeSecret;
 use sqlx::{
     postgres::{PgConnectOptions, PgPoolOptions},
@@ -26,9 +27,30 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         oauth_settings: Arc::new(settings.oauth),
     };
     let cohort_routes = Router::new().route("/", get(routes::list_cohorts));
+    let cors_layer = CorsLayer::new()
+        .allow_headers([
+            header::AUTHORIZATION,
+            header::CONTENT_TYPE,
+            header::ACCEPT_LANGUAGE,
+        ])
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
+        .allow_origin(
+            settings
+                .server
+                .allowed_origins
+                .iter()
+                .map(|s| s.parse::<HeaderValue>().unwrap())
+                .collect::<Vec<HeaderValue>>(),
+        );
     let app = Router::new()
         .nest("/api/v1", Router::new().nest("/cohorts", cohort_routes))
-        .layer(CorsLayer::permissive())
+        .layer(cors_layer)
         .with_state(Arc::new(state));
 
     println!("Listening on http://{address}");

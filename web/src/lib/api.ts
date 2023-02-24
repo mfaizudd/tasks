@@ -18,6 +18,7 @@ export async function getAuthorizedApi() {
         if (claims.exp * 1000 < Date.now()) {
             const refresh_token = getRefreshToken();
             const response = await refreshToken(refresh_token);
+            console.log(response.data);
             token = response.data.access_token;
             setToken(token);
             setRefreshToken(response.data.refresh_token);
