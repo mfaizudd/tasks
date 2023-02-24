@@ -2,6 +2,15 @@ import sha256 from "crypto-js/sha256";
 import Base64 from "crypto-js/enc-base64";
 import axios from "axios";
 
+export interface Claims {
+    iss: string,
+    sub: string
+    aud: string,
+    exp: number,
+    iat: number,
+    acr: string,
+}
+
 export interface TokenResponse {
     access_token: string;
     expires_in: number;
@@ -59,4 +68,19 @@ export async function exchangeCodeForToken(code: string, code_verifier: string) 
     console.log(response.data);
     removeCodeVerifier();
     return response.data;
+}
+
+export function refreshToken(refresh_token: string|null) {
+    const tokenUrl = process.env.NEXT_PUBLIC_TOKEN_URL ?? "";
+    const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+    const body = {
+        grant_type: "refresh_token",
+        refresh_token: refresh_token,
+        client_id: clientId,
+    }
+    return axios.post<TokenResponse>(tokenUrl, body, {
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    });
 }

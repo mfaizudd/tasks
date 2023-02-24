@@ -20,7 +20,7 @@ export default function Home() {
     }
     async function testFetch() {
         try {
-            const api = getAuthorizedApi()
+            const api = await getAuthorizedApi()
             const response = await api.get('/cohorts')
             console.log(response)
         } catch (error) {

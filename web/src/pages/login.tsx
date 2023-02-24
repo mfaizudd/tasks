@@ -1,18 +1,10 @@
 import Layout from "@/components/Layout";
-import { useAppContext } from "@/context/state";
 import { setRefreshToken, setToken } from "@/lib/api";
 import { useRouter } from "next/router";
-import jwt_decode from "jwt-decode";
 import { useEffect } from "react";
 import Link from "next/link";
 import { GetServerSideProps } from "next";
 import { exchangeCodeForToken, getCodeVerifier } from "@/lib/oauth";
-
-interface Claims {
-    exp: number,
-    iat: number,
-    sub: string
-}
 
 interface Props {
     auth_code?: string

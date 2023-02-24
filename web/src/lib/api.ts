@@ -1,4 +1,6 @@
 import axios from "axios";
+import jwt_decode from "jwt-decode";
+import { Claims, refreshToken } from "./oauth";
 
 export function getApi() {
     return axios.create({
@@ -9,12 +11,25 @@ export function getApi() {
     });
 }
 
-export function getAuthorizedApi() {
+export async function getAuthorizedApi() {
+    let token = getToken();
+    try {
+        const claims = jwt_decode<Claims>(token ?? "");
+        if (claims.exp * 1000 < Date.now()) {
+            const refresh_token = getRefreshToken();
+            const response = await refreshToken(refresh_token);
+            token = response.data.access_token;
+            setToken(token);
+            setRefreshToken(response.data.refresh_token);
+        }
+    } catch (error) {
+        console.log(error);
+    }
     return axios.create({
         baseURL: process.env.NEXT_PUBLIC_API_URL,
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${getToken()}`
+            "Authorization": `Bearer ${token}`
         }
     });
 }
