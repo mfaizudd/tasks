@@ -6,8 +6,6 @@ use directories::ProjectDirs;
 use secrecy::Secret;
 use serde::Deserialize;
 
-use crate::entities::UserType;
-
 #[derive(Deserialize)]
 pub struct ServerSettings {
     pub host: String,
@@ -25,17 +23,9 @@ pub struct DatabaseSettings {
 }
 
 #[derive(Deserialize)]
-pub struct AdminSettings {
-    pub email: String,
-    pub user_type: UserType,
-    pub password: Option<Secret<String>>,
-}
-
-#[derive(Deserialize)]
 pub struct Settings {
     pub server: ServerSettings,
     pub database: DatabaseSettings,
-    pub admin: AdminSettings,
 }
 
 pub fn get_config(environment: &str) -> Result<Settings> {

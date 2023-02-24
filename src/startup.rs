@@ -1,7 +1,4 @@
-use axum::{
-    routing::{get, post},
-    Router,
-};
+use axum::{routing::get, Router};
 use secrecy::{ExposeSecret, Secret};
 use sqlx::{
     postgres::{PgConnectOptions, PgPoolOptions},
@@ -11,7 +8,7 @@ use std::{net::SocketAddr, sync::Arc};
 
 use crate::{
     config::{DatabaseSettings, Settings},
-    routes::{auth, user}, services::UserService, dto::UserDto, entities::UserRole,
+    routes,
 };
 
 pub struct ApiState {
@@ -23,37 +20,13 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
     let address =
         format!("{}:{}", settings.server.host, settings.server.port).parse::<SocketAddr>()?;
     let db_pool = Arc::new(get_db_pool(settings.database).await?);
-    let user_service = UserService::new(db_pool.clone());
-    let admin = user_service.get_user_by_email(settings.admin.email.clone()).await?;
-    if admin.is_none() {
-        user_service.create_user(UserDto {
-            name: "Admin".to_string(),
-            role: UserRole::Admin,
-            email: settings.admin.email,
-            user_type: settings.admin.user_type,
-            password: None
-        }).await?;
-    }
     let state = ApiState {
         db_pool: db_pool.clone(),
         jwt_secret: settings.server.jwt_secret,
     };
-    let auth_routes = Router::new()
-        .route("/login/google", post(auth::login_google))
-        .route(
-            "/register/student/google",
-            post(auth::register_student_google),
-        )
-        .route("/refresh", post(auth::refresh))
-        .route("/info", get(auth::info));
-    let user_routes = Router::new().route("/", get(user::get_users));
+    let cohort_routes = Router::new().route("/", get(routes::list_cohorts));
     let app = Router::new()
-        .nest(
-            "/api",
-            Router::new()
-                .nest("/auth", auth_routes)
-                .nest("/user", user_routes),
-        )
+        .nest("/api/v1", Router::new().nest("/cohorts", cohort_routes))
         .with_state(Arc::new(state));
 
     println!("Listening on http://{address}");

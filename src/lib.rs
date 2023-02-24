@@ -1,10 +1,10 @@
+pub mod auth;
 pub mod config;
 pub mod dto;
 pub mod entities;
 mod errors;
 mod response;
-mod routes;
-mod services;
+pub mod routes;
 mod startup;
 
 pub use errors::ApiError;

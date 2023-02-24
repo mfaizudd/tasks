@@ -1,2 +1,3 @@
-pub mod auth;
-pub mod user;
+mod cohort;
+
+pub use cohort::*;

@@ -8,7 +8,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{services::AuthService, startup::ApiState, ApiError};
+use crate::{startup::ApiState, ApiError, auth::verify_access_token};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -69,9 +69,8 @@ impl FromRequestParts<Arc<ApiState>> for Claims {
             TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state)
                 .await
                 .map_err(|_| reject())?;
-        let auth_service = AuthService::new(state.clone());
-        let claims = auth_service
-            .verify_access_token(bearer.token())
+        let secret = state.jwt_secret.clone();
+        let claims = verify_access_token(secret, bearer.token())
             .await
             .map_err(|_| reject())?;
         Ok(claims)
