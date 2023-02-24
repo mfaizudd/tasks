@@ -10,7 +10,7 @@ use serde::Deserialize;
 pub struct ServerSettings {
     pub host: String,
     pub port: u16,
-    pub allowed_origins: Vec<String>
+    pub allowed_origins: Vec<String>,
 }
 
 #[derive(Deserialize)]
