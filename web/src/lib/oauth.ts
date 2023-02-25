@@ -65,7 +65,6 @@ export async function exchangeCodeForToken(code: string, code_verifier: string) 
             "Content-Type": "application/x-www-form-urlencoded",
         },
     });
-    console.log(response.data);
     removeCodeVerifier();
     return response.data;
 }

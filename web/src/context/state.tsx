@@ -5,7 +5,9 @@ interface Props {
 }
 
 export interface User {
+    sub: string;
     email: string;
+    name: string;
 }
 
 interface State {
