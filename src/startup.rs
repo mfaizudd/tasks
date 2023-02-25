@@ -81,7 +81,7 @@ pub async fn get_db_pool(settings: DatabaseSettings) -> Result<PgPool, anyhow::E
 
 pub async fn get_redis_pool(settings: RedisSettings) -> Result<RedisPool, anyhow::Error> {
     let cfg =
-        deadpool_redis::Config::from_url(&format!("redis://{}:{}", settings.host, settings.port));
+        deadpool_redis::Config::from_url(format!("redis://{}:{}", settings.host, settings.port));
     let pool = cfg.create_pool(Some(deadpool_redis::Runtime::Tokio1))?;
     Ok(pool)
 }

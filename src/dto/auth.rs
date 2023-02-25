@@ -79,7 +79,7 @@ impl FromRequestParts<Arc<ApiState>> for Claims {
             TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state)
                 .await
                 .map_err(|_| reject())?;
-        let claims = get_claims(&*state.redis_pool, &*state.oauth_settings, bearer.token()).await?;
+        let claims = get_claims(&state.redis_pool, &state.oauth_settings, bearer.token()).await?;
         Ok(claims)
     }
 }
@@ -121,8 +121,7 @@ pub async fn get_claims(
             let mut validation = Validation::new(jwk.common.algorithm.unwrap());
             validation.set_audience(&[&oauth_settings.audience]);
             validation.set_issuer(&[&oauth_settings.issuer]);
-            let claims = decode::<Claims>(token, &decoding_key, &validation)?.claims;
-            claims
+            decode::<Claims>(token, &decoding_key, &validation)?.claims
         }
         _ => return Err(reject()),
     };
@@ -142,8 +141,8 @@ impl FromRequestParts<Arc<ApiState>> for UserInfo {
             TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state)
                 .await
                 .map_err(|_| reject())?;
-        let claims = get_claims(&*state.redis_pool, &*state.oauth_settings, bearer.token()).await?;
-        let user = redis::command(&*state.redis_pool, &format!("user_info|{}", claims.sub))
+        let claims = get_claims(&state.redis_pool, &state.oauth_settings, bearer.token()).await?;
+        let user = redis::command(&state.redis_pool, &format!("user_info|{}", claims.sub))
             .get()
             .await?;
         let user = match user {
@@ -158,7 +157,7 @@ impl FromRequestParts<Arc<ApiState>> for UserInfo {
                     .json::<UserInfo>()
                     .await
                     .map_err(|_| reject())?;
-                redis::command(&*state.redis_pool, &format!("user_info|{}", claims.sub))
+                redis::command(&state.redis_pool, &format!("user_info|{}", claims.sub))
                     .set(&user)
                     .await?
                     .expire(Duration::minutes(15))
