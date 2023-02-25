@@ -2,9 +2,7 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Json, Path, State},
-    headers::{authorization::Bearer, Authorization},
     response::IntoResponse,
-    TypedHeader,
 };
 use hyper::StatusCode;
 use uuid::Uuid;
@@ -33,24 +31,15 @@ pub async fn get_cohort(
 }
 
 pub async fn create_cohort(
+    user_info: UserInfo,
     Json(cohort_request): Json<CohortRequest>,
-    TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
     State(state): State<Arc<ApiState>>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let user = reqwest::Client::new()
-        .get(state.oauth_settings.userinfo_url.as_str())
-        .bearer_auth(bearer.token())
-        .send()
-        .await
-        .unwrap()
-        .json::<UserInfo>()
-        .await
-        .unwrap();
     let cohort = sqlx::query_as!(
         Cohort,
         "INSERT INTO cohorts (name, email) VALUES ($1, $2) RETURNING *",
         cohort_request.name,
-        user.email
+        user_info.email,
     )
     .fetch_one(&*state.db_pool)
     .await?;
@@ -58,6 +47,7 @@ pub async fn create_cohort(
 }
 
 pub async fn update_cohort(
+    user_info: UserInfo,
     Path(cohort_id): Path<Uuid>,
     Json(cohort_request): Json<CohortRequest>,
     State(state): State<Arc<ApiState>>,
@@ -66,7 +56,7 @@ pub async fn update_cohort(
         Cohort,
         "UPDATE cohorts SET name = $1, email = $2 WHERE id = $3 RETURNING *",
         cohort_request.name,
-        cohort_request.email,
+        user_info.email,
         cohort_id
     )
     .fetch_one(&*state.db_pool)

@@ -31,9 +31,16 @@ pub struct DatabaseSettings {
 }
 
 #[derive(Deserialize)]
+pub struct RedisSettings {
+    pub host: String,
+    pub port: u16,
+}
+
+#[derive(Deserialize)]
 pub struct Settings {
     pub server: ServerSettings,
     pub database: DatabaseSettings,
+    pub redis: RedisSettings,
     pub oauth: OauthSettings,
 }
 

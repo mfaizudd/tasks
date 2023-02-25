@@ -9,22 +9,26 @@ use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
 
 use crate::{
-    config::{DatabaseSettings, OauthSettings, Settings},
+    config::{DatabaseSettings, OauthSettings, RedisSettings, Settings},
+    redis::RedisPool,
     routes,
 };
 
 pub struct ApiState {
     pub db_pool: Arc<PgPool>,
     pub oauth_settings: Arc<OauthSettings>,
+    pub redis_pool: Arc<RedisPool>,
 }
 
 pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
     let address =
         format!("{}:{}", settings.server.host, settings.server.port).parse::<SocketAddr>()?;
     let db_pool = Arc::new(get_db_pool(settings.database).await?);
+    let redis_pool = Arc::new(get_redis_pool(settings.redis).await?);
     let state = ApiState {
         db_pool: db_pool.clone(),
         oauth_settings: Arc::new(settings.oauth),
+        redis_pool: redis_pool.clone(),
     };
     let cohort_routes = Router::new().route("/", get(routes::list_cohorts));
     let cors_layer = CorsLayer::new()
@@ -72,5 +76,12 @@ pub async fn get_db_pool(settings: DatabaseSettings) -> Result<PgPool, anyhow::E
         .acquire_timeout(std::time::Duration::from_secs(2))
         .connect_with(options)
         .await?;
+    Ok(pool)
+}
+
+pub async fn get_redis_pool(settings: RedisSettings) -> Result<RedisPool, anyhow::Error> {
+    let cfg =
+        deadpool_redis::Config::from_url(&format!("redis://{}:{}", settings.host, settings.port));
+    let pool = cfg.create_pool(Some(deadpool_redis::Runtime::Tokio1))?;
     Ok(pool)
 }

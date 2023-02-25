@@ -3,6 +3,7 @@ pub mod config;
 pub mod dto;
 pub mod entities;
 mod errors;
+pub mod redis;
 mod response;
 pub mod routes;
 mod startup;

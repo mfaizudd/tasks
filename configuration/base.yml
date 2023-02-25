@@ -13,3 +13,6 @@ database:
   host: localhost
   port: 5432
   database: tasks
+redis:
+  host: 127.0.0.1
+  port: 6379
