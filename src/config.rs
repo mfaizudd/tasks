@@ -18,6 +18,7 @@ pub struct OauthSettings {
     pub issuer: String,
     pub audience: String,
     pub jwks_url: String,
+    pub userinfo_url: String,
 }
 
 #[derive(Deserialize)]

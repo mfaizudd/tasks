@@ -6,6 +6,7 @@ oauth:
   issuer: http://auth.company/
   audience: audience
   jwks_url: http://auth.company/jwks
+  userinfo_url: http://auth.company/userinfo
 database:
   username: postgres
   password: postgres

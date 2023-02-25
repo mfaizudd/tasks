@@ -52,7 +52,6 @@ pub struct RefreshRequest {
 pub struct UserInfo {
     pub email: String,
     pub email_verified: bool,
-    pub picture: String,
     pub sub: String,
 }
 

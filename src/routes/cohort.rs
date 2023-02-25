@@ -2,12 +2,14 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Json, Path, State},
+    headers::{authorization::Bearer, Authorization},
     response::IntoResponse,
+    TypedHeader,
 };
 use hyper::StatusCode;
 use uuid::Uuid;
 
-use crate::dto::{Claims, CohortRequest};
+use crate::dto::{Claims, CohortRequest, UserInfo};
 use crate::{entities::Cohort, response::Response, startup::ApiState, ApiError};
 
 pub async fn list_cohorts(
@@ -32,13 +34,23 @@ pub async fn get_cohort(
 
 pub async fn create_cohort(
     Json(cohort_request): Json<CohortRequest>,
+    TypedHeader(Authorization(bearer)): TypedHeader<Authorization<Bearer>>,
     State(state): State<Arc<ApiState>>,
 ) -> Result<impl IntoResponse, ApiError> {
+    let user = reqwest::Client::new()
+        .get(state.oauth_settings.userinfo_url.as_str())
+        .bearer_auth(bearer.token())
+        .send()
+        .await
+        .unwrap()
+        .json::<UserInfo>()
+        .await
+        .unwrap();
     let cohort = sqlx::query_as!(
         Cohort,
         "INSERT INTO cohorts (name, email) VALUES ($1, $2) RETURNING *",
         cohort_request.name,
-        cohort_request.email
+        user.email
     )
     .fetch_one(&*state.db_pool)
     .await?;
