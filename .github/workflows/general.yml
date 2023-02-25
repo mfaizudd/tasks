@@ -122,6 +122,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
       - name: Cache sqlx-cli and tarpaulin
         uses: actions/cache@v2
         id: cache-sqlx
