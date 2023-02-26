@@ -14,7 +14,7 @@ impl PaginationDto {
     pub fn to_query(self) -> (i64, i64, String) {
         let limit = self.per_page.unwrap_or(10);
         let offset = (self.page.unwrap_or(1) - 1) * limit;
-        let order_by = self.sort_by.unwrap_or_else(|| "id".to_string());
+        let order_by = self.sort_by.unwrap_or_else(|| "created_at".to_string());
         (limit, offset, order_by)
     }
 }

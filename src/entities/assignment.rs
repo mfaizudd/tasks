@@ -3,24 +3,6 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
-pub struct Cohort {
-    pub id: Uuid,
-    pub name: String,
-    pub email: String,
-    pub created_at: chrono::DateTime<Utc>,
-    pub updated_at: chrono::DateTime<Utc>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Student {
-    pub id: Uuid,
-    pub name: String,
-    pub number: String,
-    pub created_at: chrono::DateTime<Utc>,
-    pub updated_at: chrono::DateTime<Utc>,
-}
-
-#[derive(Serialize, Deserialize)]
 pub struct Assignment {
     pub id: Uuid,
     pub name: String,

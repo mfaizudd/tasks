@@ -1,4 +1,5 @@
 import Dashboard from "@/components/Dashboard";
+import { Loading } from "@/components/Loading";
 import { getAuthorizedApi } from "@/lib/api";
 import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
@@ -24,6 +25,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) 
 
 const Edit: NextPage<Props> = ({ id }) => {
     const router = useRouter();
+    const [loading, setLoading] = useState<boolean>(true);
     const [name, setName] = useState<string>("");
     const fetchData = async () => {
         try {
@@ -31,6 +33,7 @@ const Edit: NextPage<Props> = ({ id }) => {
             const res = await api.get(`/cohorts/${id}`);
             if (res.status === 200) {
                 setName(res.data.data.name);
+                setLoading(false);
             }
         } catch (err) {
             console.log(err)
@@ -53,12 +56,14 @@ const Edit: NextPage<Props> = ({ id }) => {
     return (
         <Dashboard>
             <div className="p-5">
-                <form onSubmit={e => { e.preventDefault(); submit() }}>
-                    <div className="flex gap-3">
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Cohort name" className="input input-bordered w-full max-w-xs" />
-                        <button className="btn btn-primary" type="submit">Submit</button>
-                    </div>
-                </form>
+                {loading ? <Loading /> : (
+                    <form onSubmit={e => { e.preventDefault(); submit() }}>
+                        <div className="flex gap-3">
+                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Cohort name" className="input input-bordered w-full max-w-xs" />
+                            <button className="btn btn-primary" type="submit">Submit</button>
+                        </div>
+                    </form>
+                )}
             </div>
         </Dashboard>
     )
