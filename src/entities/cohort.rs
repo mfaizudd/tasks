@@ -20,7 +20,6 @@ impl Cohort {
         user: UserInfo,
         pagination: PaginationDto,
     ) -> Result<Vec<Cohort>, sqlx::Error> {
-        let (limit, offset, order_by) = pagination.to_query();
         let cohorts = sqlx::query_as!(
             Cohort,
             r#"
@@ -31,9 +30,9 @@ impl Cohort {
             OFFSET $4
             "#,
             user.email,
-            order_by,
-            limit,
-            offset,
+            pagination.order_by(),
+            pagination.limit(),
+            pagination.offset()
         )
         .fetch_all(db)
         .await?;

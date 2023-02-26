@@ -40,7 +40,8 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         .route("/:id", get(routes::get_cohort))
         .route("/", post(routes::create_cohort))
         .route("/:id", put(routes::update_cohort))
-        .route("/:id", delete(routes::delete_cohort));
+        .route("/:id", delete(routes::delete_cohort))
+        .route("/:id/students", get(routes::list_students));
     let app = Router::new()
         .nest("/api/v1", Router::new().nest("/cohorts", cohort_routes))
         .layer(cors_layer)
