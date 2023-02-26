@@ -9,7 +9,7 @@ use hyper::StatusCode;
 use uuid::Uuid;
 
 use crate::{
-    dto::{Claims, StudentDto},
+    dto::{Claims, StudentRequest},
     entities::student::Student,
     response::Response,
     startup::ApiState,
@@ -33,7 +33,7 @@ pub async fn get_student(
 pub async fn create_student(
     _: Claims,
     State(api_state): State<Arc<ApiState>>,
-    Json(student): Json<StudentDto>,
+    Json(student): Json<StudentRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let student = Student::create(
         &api_state.db_pool,
@@ -52,7 +52,7 @@ pub async fn update_student(
     _: Claims,
     State(api_state): State<Arc<ApiState>>,
     Path(id): Path<Uuid>,
-    Json(student): Json<StudentDto>,
+    Json(student): Json<StudentRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     Student::find_one(&api_state.db_pool, id).await?;
     let student = Student::update(

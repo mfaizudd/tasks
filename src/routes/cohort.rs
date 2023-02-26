@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::{
     dto::{CohortRequest, PaginationDto, UserInfo},
-    entities::{cohort::Cohort, student::Student},
+    entities::{assignment::Assignment, cohort::Cohort, student::Student},
 };
 use crate::{response::Response, startup::ApiState, ApiError};
 
@@ -36,6 +36,25 @@ pub async fn list_cohort_students(
     }
     let students = Student::find_by_cohort(&state.db_pool, cohort_id, pagination).await?;
     Ok(Response::new(students, "Students retrieved".to_string(), vec![]).json(StatusCode::OK))
+}
+
+pub async fn list_cohort_assignments(
+    user: UserInfo,
+    Path(cohort_id): Path<Uuid>,
+    Query(pagination): Query<PaginationDto>,
+    State(state): State<Arc<ApiState>>,
+) -> Result<impl IntoResponse, ApiError> {
+    let cohort = Cohort::find_one(&state.db_pool, cohort_id).await?;
+    if cohort.email != user.email {
+        return Err(ApiError::AuthorizationError(
+            "You are not authorized to view this cohort".to_string(),
+        ));
+    }
+    let assignments = Assignment::find_by_cohort(&state.db_pool, cohort_id, pagination).await?;
+    Ok(
+        Response::new(assignments, "Assignments retrieved".to_string(), vec![])
+            .json(StatusCode::OK),
+    )
 }
 
 pub async fn get_cohort(

@@ -41,18 +41,25 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         .route("/", post(routes::create_cohort))
         .route("/:id", put(routes::update_cohort))
         .route("/:id", delete(routes::delete_cohort))
-        .route("/:id/students", get(routes::list_cohort_students));
+        .route("/:id/students", get(routes::list_cohort_students))
+        .route("/:id/assignments", get(routes::list_cohort_assignments));
     let student_routes = Router::new()
         .route("/:id", get(routes::get_student))
         .route("/", post(routes::create_student))
         .route("/:id", put(routes::update_student))
         .route("/:id", delete(routes::delete_student));
+    let assignment_routes = Router::new()
+        .route("/:id", get(routes::get_assignment))
+        .route("/", post(routes::create_assignment))
+        .route("/:id", put(routes::update_assignment))
+        .route("/:id", delete(routes::delete_assignment));
     let app = Router::new()
         .nest(
             "/api/v1",
             Router::new()
                 .nest("/cohorts", cohort_routes)
-                .nest("/students", student_routes),
+                .nest("/students", student_routes)
+                .nest("/assignments", assignment_routes),
         )
         .layer(cors_layer)
         .with_state(Arc::new(state));
