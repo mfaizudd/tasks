@@ -12,7 +12,7 @@ const CohortIndex: NextPage = () => {
             href: "/cohorts/create",
         }
     ]
-    const [cohorts, setCohorts] = useState<any[]>(() => []);
+    const [cohorts, setCohorts] = useState<Cohort[]>(() => []);
 
     const fetchCohorts = async () => {
         try {
@@ -25,7 +25,7 @@ const CohortIndex: NextPage = () => {
         }
     }
 
-    const deleteCohort = async (id: number) => {
+    const deleteCohort = async (id: string) => {
         if (confirm("Are you sure you want to delete this cohort?")) {
             try {
                 const api = await getAuthorizedApi();

@@ -36,12 +36,6 @@ pub struct AuthRequest {
     pub access_token: String,
 }
 
-#[derive(Deserialize)]
-pub struct StudentRegisterRequest {
-    pub access_token: String,
-    pub invite_code: String,
-}
-
 #[derive(Serialize)]
 pub struct AuthResponse {
     pub access_token: String,

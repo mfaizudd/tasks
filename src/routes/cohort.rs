@@ -22,7 +22,7 @@ pub async fn list_cohorts(
     Ok(Response::new(cohorts, "Cohorts retrieved".to_string(), vec![]).json(StatusCode::OK))
 }
 
-pub async fn list_students(
+pub async fn list_cohort_students(
     user: UserInfo,
     Path(cohort_id): Path<Uuid>,
     Query(pagination): Query<PaginationDto>,

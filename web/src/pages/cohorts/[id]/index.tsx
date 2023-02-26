@@ -3,6 +3,7 @@ import { Loading } from "@/components/Loading";
 import { getAuthorizedApi } from "@/lib/api";
 import { Student } from "@/lib/entities";
 import { GetServerSideProps, NextPage } from "next";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -57,11 +58,30 @@ const Edit: NextPage<Props> = ({ id }) => {
             console.log(err);
         }
     }
+
+    const deleteStudent = async (id: string) => {
+        if (confirm("Are you sure you want to delete this cohort?")) {
+            try {
+                const api = await getAuthorizedApi();
+                await api.delete(`/students/${id}`);
+                fetchData();
+            } catch (err) {
+                console.log(err)
+            }
+        }
+    }
+
     useEffect(() => {
         fetchData()
     }, [])
+    const actions = [
+        {
+            label: "Add student",
+            href: `/cohorts/${id}/students/add`,
+        }
+    ]
     return (
-        <Dashboard>
+        <Dashboard actions={actions}>
             <div className="p-5 flex flex-col gap-3">
                 {loading ? <Loading /> : (
                     <>
@@ -87,6 +107,10 @@ const Edit: NextPage<Props> = ({ id }) => {
                                             <th>{i + 1}</th>
                                             <td>{student.number}</td>
                                             <td>{student.name}</td>
+                                            <td className="flex gap-3">
+                                                <Link className="btn" href={`/cohorts/${id}/students/${student.id}`}>Edit</Link>
+                                                <button className="btn btn-accent" onClick={() => deleteStudent(student.id)}>Delete</button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
