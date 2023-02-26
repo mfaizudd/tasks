@@ -160,7 +160,7 @@ impl FromRequestParts<Arc<ApiState>> for UserInfo {
                 redis::command(&state.redis_pool, &format!("user_info|{}", claims.sub))
                     .set(&user)
                     .await?
-                    .expire(Duration::minutes(15))
+                    .expire(Duration::days(1))
                     .await?;
                 user
             }

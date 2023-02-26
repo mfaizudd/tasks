@@ -33,7 +33,7 @@ export default function Home() {
                         <p className="py-6">Do your homework man! (or not, I'm not your mom)</p>
                         {user !== null && <p className="p-2">Welcome {user.name}</p>}
                         <div className="flex gap-2 justify-center">
-                            <Link href="/dashboard" className="btn btn-primary">Start doing some tasks</Link>
+                            {user !== null && <Link href="/dashboard" className="btn btn-primary">Start doing some tasks</Link>}
                             {button}
                         </div>
                     </div>

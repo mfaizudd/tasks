@@ -7,16 +7,23 @@ use axum::{
 use hyper::StatusCode;
 use uuid::Uuid;
 
-use crate::dto::{Claims, CohortRequest, UserInfo};
+use crate::dto::{CohortRequest, UserInfo};
 use crate::{entities::Cohort, response::Response, startup::ApiState, ApiError};
 
 pub async fn list_cohorts(
-    _: Claims,
+    user_info: UserInfo,
     State(state): State<Arc<ApiState>>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let cohorts = sqlx::query_as!(Cohort, "SELECT * FROM cohorts")
-        .fetch_all(&*state.db_pool)
-        .await?;
+    let cohorts = sqlx::query_as!(
+        Cohort,
+        r#"
+        SELECT * FROM cohorts
+        WHERE email = $1
+        ORDER BY created_at DESC"#,
+        user_info.email
+    )
+    .fetch_all(&*state.db_pool)
+    .await?;
     Ok(Response::new(cohorts, "Cohorts retrieved".to_string(), vec![]).json(StatusCode::OK))
 }
 
@@ -49,8 +56,8 @@ pub async fn create_cohort(
 pub async fn update_cohort(
     user_info: UserInfo,
     Path(cohort_id): Path<Uuid>,
-    Json(cohort_request): Json<CohortRequest>,
     State(state): State<Arc<ApiState>>,
+    Json(cohort_request): Json<CohortRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = sqlx::query_as!(
         Cohort,

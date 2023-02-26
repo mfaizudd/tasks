@@ -2,6 +2,7 @@ import Dashboard from "@/components/Dashboard";
 import { getAuthorizedApi } from "@/lib/api";
 import { Cohort, Wrapper } from "@/lib/entities";
 import { NextPage } from "next";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
 const CohortIndex: NextPage = () => {
@@ -39,7 +40,9 @@ const CohortIndex: NextPage = () => {
                             <tr key={cohort.id} className="hover">
                                 <th>{i + 1}</th>
                                 <td>{cohort.name}</td>
-                                <td></td>
+                                <td>
+                                    <Link className="btn btn-primary" href={`/cohorts/${cohort.id}`}>Edit</Link>
+                                </td>
                             </tr>
                         ))}
                     </tbody>

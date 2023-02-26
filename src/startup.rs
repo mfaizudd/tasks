@@ -1,4 +1,4 @@
-use axum::{http::HeaderValue, routing::{get, post}, Router};
+use axum::{http::HeaderValue, routing::{get, post, put}, Router};
 use hyper::{header, Method};
 use secrecy::ExposeSecret;
 use sqlx::{
@@ -33,7 +33,9 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
     let cors_layer = get_cors_layer(settings.server);
     let cohort_routes = Router::new()
         .route("/", get(routes::list_cohorts))
-        .route("/", post(routes::create_cohort));
+        .route("/:id", get(routes::get_cohort))
+        .route("/", post(routes::create_cohort))
+        .route("/:id", put(routes::update_cohort));
     let app = Router::new()
         .nest("/api/v1", Router::new().nest("/cohorts", cohort_routes))
         .layer(cors_layer)
