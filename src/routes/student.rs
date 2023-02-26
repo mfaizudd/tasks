@@ -78,4 +78,3 @@ pub async fn delete_student(
     Student::delete(&api_state.db_pool, id).await?;
     Ok(Response::new((), "Student deleted successfully.".to_string(), vec![]).json(StatusCode::OK))
 }
-

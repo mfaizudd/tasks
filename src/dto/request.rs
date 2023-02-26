@@ -20,6 +20,8 @@ impl PaginationDto {
     }
 
     pub fn order_by(&self) -> String {
-        self.sort_by.clone().unwrap_or_else(|| "created_at".to_string())
+        self.sort_by
+            .clone()
+            .unwrap_or_else(|| "created_at".to_string())
     }
 }

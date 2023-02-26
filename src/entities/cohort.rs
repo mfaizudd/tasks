@@ -53,11 +53,7 @@ impl Cohort {
         Ok(cohort)
     }
 
-    pub async fn create(
-        db: &PgPool,
-        user: UserInfo,
-        name: String,
-    ) -> Result<Cohort, sqlx::Error> {
+    pub async fn create(db: &PgPool, user: UserInfo, name: String) -> Result<Cohort, sqlx::Error> {
         let cohort = sqlx::query_as!(
             Cohort,
             r#"
@@ -73,11 +69,7 @@ impl Cohort {
         Ok(cohort)
     }
 
-    pub async fn update(
-        db: &PgPool,
-        id: Uuid,
-        name: String,
-    ) -> Result<Cohort, sqlx::Error> {
+    pub async fn update(db: &PgPool, id: Uuid, name: String) -> Result<Cohort, sqlx::Error> {
         let cohort = sqlx::query_as!(
             Cohort,
             r#"
