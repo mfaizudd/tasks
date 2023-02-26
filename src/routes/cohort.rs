@@ -54,16 +54,14 @@ pub async fn create_cohort(
 }
 
 pub async fn update_cohort(
-    user_info: UserInfo,
     Path(cohort_id): Path<Uuid>,
     State(state): State<Arc<ApiState>>,
     Json(cohort_request): Json<CohortRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = sqlx::query_as!(
         Cohort,
-        "UPDATE cohorts SET name = $1, email = $2 WHERE id = $3 RETURNING *",
+        "UPDATE cohorts SET name = $1 WHERE id = $2 RETURNING *",
         cohort_request.name,
-        user_info.email,
         cohort_id
     )
     .fetch_one(&*state.db_pool)

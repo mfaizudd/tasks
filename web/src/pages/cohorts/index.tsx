@@ -15,10 +15,26 @@ const CohortIndex: NextPage = () => {
     const [cohorts, setCohorts] = useState<any[]>(() => []);
 
     const fetchCohorts = async () => {
-        const api = await getAuthorizedApi();
-        const response = await api.get<Wrapper<Cohort[]>>("/cohorts");
-        const data = response.data.data;
-        setCohorts(data)
+        try {
+            const api = await getAuthorizedApi();
+            const response = await api.get<Wrapper<Cohort[]>>("/cohorts");
+            const data = response.data.data;
+            setCohorts(data)
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    const deleteCohort = async (id: number) => {
+        if (confirm("Are you sure you want to delete this cohort?")) {
+            try {
+                const api = await getAuthorizedApi();
+                await api.delete(`/cohorts/${id}`);
+                fetchCohorts();
+            } catch (err) {
+                console.log(err)
+            }
+        }
     }
 
     useEffect(() => {
@@ -40,8 +56,9 @@ const CohortIndex: NextPage = () => {
                             <tr key={cohort.id} className="hover">
                                 <th>{i + 1}</th>
                                 <td>{cohort.name}</td>
-                                <td>
-                                    <Link className="btn btn-primary" href={`/cohorts/${cohort.id}`}>Edit</Link>
+                                <td className="flex gap-x-2">
+                                    <Link className="btn" href={`/cohorts/${cohort.id}`}>Edit</Link>
+                                    <button className="btn btn-accent" onClick={() => deleteCohort(cohort.id)}>Delete</button>
                                 </td>
                             </tr>
                         ))}
