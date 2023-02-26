@@ -32,8 +32,8 @@ pub async fn get_cohort(
 
 pub async fn create_cohort(
     user_info: UserInfo,
-    Json(cohort_request): Json<CohortRequest>,
     State(state): State<Arc<ApiState>>,
+    Json(cohort_request): Json<CohortRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = sqlx::query_as!(
         Cohort,

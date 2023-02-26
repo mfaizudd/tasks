@@ -1,4 +1,4 @@
-use axum::{http::HeaderValue, routing::get, Router};
+use axum::{http::HeaderValue, routing::{get, post}, Router};
 use hyper::{header, Method};
 use secrecy::ExposeSecret;
 use sqlx::{
@@ -9,7 +9,7 @@ use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
 
 use crate::{
-    config::{DatabaseSettings, OauthSettings, RedisSettings, Settings},
+    config::{DatabaseSettings, OauthSettings, RedisSettings, ServerSettings, Settings},
     redis::RedisPool,
     routes,
 };
@@ -30,28 +30,10 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         oauth_settings: Arc::new(settings.oauth),
         redis_pool: redis_pool.clone(),
     };
-    let cohort_routes = Router::new().route("/", get(routes::list_cohorts));
-    let cors_layer = CorsLayer::new()
-        .allow_headers([
-            header::AUTHORIZATION,
-            header::CONTENT_TYPE,
-            header::ACCEPT_LANGUAGE,
-        ])
-        .allow_methods([
-            Method::GET,
-            Method::POST,
-            Method::PUT,
-            Method::DELETE,
-            Method::OPTIONS,
-        ])
-        .allow_origin(
-            settings
-                .server
-                .allowed_origins
-                .iter()
-                .map(|s| s.parse::<HeaderValue>().unwrap())
-                .collect::<Vec<HeaderValue>>(),
-        );
+    let cors_layer = get_cors_layer(settings.server);
+    let cohort_routes = Router::new()
+        .route("/", get(routes::list_cohorts))
+        .route("/", post(routes::create_cohort));
     let app = Router::new()
         .nest("/api/v1", Router::new().nest("/cohorts", cohort_routes))
         .layer(cors_layer)
@@ -84,4 +66,28 @@ pub async fn get_redis_pool(settings: RedisSettings) -> Result<RedisPool, anyhow
         deadpool_redis::Config::from_url(format!("redis://{}:{}", settings.host, settings.port));
     let pool = cfg.create_pool(Some(deadpool_redis::Runtime::Tokio1))?;
     Ok(pool)
+}
+
+pub fn get_cors_layer(settings: ServerSettings) -> CorsLayer {
+    let cors_layer = CorsLayer::new()
+        .allow_headers([
+            header::AUTHORIZATION,
+            header::CONTENT_TYPE,
+            header::ACCEPT_LANGUAGE,
+        ])
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
+        .allow_origin(
+            settings
+                .allowed_origins
+                .iter()
+                .map(|s| s.parse::<HeaderValue>().unwrap())
+                .collect::<Vec<HeaderValue>>(),
+        );
+    cors_layer
 }
