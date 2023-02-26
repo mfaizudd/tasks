@@ -1,4 +1,8 @@
-use axum::{http::HeaderValue, routing::{get, post, put, delete}, Router};
+use axum::{
+    http::HeaderValue,
+    routing::{delete, get, post, put},
+    Router,
+};
 use hyper::{header, Method};
 use secrecy::ExposeSecret;
 use sqlx::{
