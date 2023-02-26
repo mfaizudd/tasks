@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { setIdToken, setRefreshToken, setToken } from "@/lib/api";
+import { getUserInfo, setIdToken, setRefreshToken, setToken } from "@/lib/api";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import Link from "next/link";
@@ -31,6 +31,11 @@ export default function Login({ auth_code }: Props) {
     const { user, setUser } = useAppContext();
     const router = useRouter();
     useEffect(() => {
+        const userInfo = getUserInfo();
+        if (userInfo) {
+            setUser(userInfo);
+            router.push("/dashboard");
+        }
         if (auth_code) {
             const code_verifier = getCodeVerifier();
             (async () => {
@@ -54,9 +59,11 @@ export default function Login({ auth_code }: Props) {
                         <p className="py-6">
                             {user ? (`Logged in as ${user.email}`) : (`Logging in...`)}
                         </p>
-                        <Link href="/dashboard">
-                            <button className="btn btn-primary">Starts doing tasks</button>
-                        </Link>
+                        {user && (
+                            <Link href="/dashboard">
+                                <button className="btn btn-primary">Starts doing tasks</button>
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>
