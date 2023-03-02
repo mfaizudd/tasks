@@ -10,6 +10,7 @@ pub struct Assignment {
     pub id: Uuid,
     pub name: String,
     pub description: String,
+    pub email: String,
     pub cohort_id: Uuid,
     pub created_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,
@@ -32,7 +33,16 @@ impl Assignment {
         let assignments = sqlx::query_as!(
             Assignment,
             r#"
-            SELECT * FROM assignments
+            SELECT
+                a.id,
+                a.name,
+                c.email,
+                description,
+                cohort_id,
+                a.created_at,
+                a.updated_at
+            FROM assignments a
+            JOIN cohorts c ON c.id = a.cohort_id
             ORDER BY $1 DESC
             LIMIT $2
             OFFSET $3
@@ -54,7 +64,16 @@ impl Assignment {
         let assignments = sqlx::query_as!(
             Assignment,
             r#"
-            SELECT * FROM assignments
+            SELECT
+                a.id,
+                a.name,
+                c.email,
+                description,
+                cohort_id,
+                a.created_at,
+                a.updated_at
+            FROM assignments a
+            JOIN cohorts c ON c.id = a.cohort_id
             WHERE cohort_id = $1
             ORDER BY $2 DESC
             LIMIT $3
@@ -78,8 +97,17 @@ impl Assignment {
         let assignments = sqlx::query_as!(
             Assignment,
             r#"
-            SELECT * FROM assignments
-            WHERE id IN (
+            SELECT
+                a.id,
+                a.name,
+                c.email,
+                description,
+                cohort_id,
+                a.created_at,
+                a.updated_at
+            FROM assignments a
+            JOIN cohorts c ON c.id = a.cohort_id
+            WHERE a.id IN (
                 SELECT assignment_id FROM assignment_scores
                 WHERE student_id = $1
             )
@@ -104,8 +132,17 @@ impl Assignment {
         let assignment = sqlx::query_as!(
             Assignment,
             r#"
-            SELECT * FROM assignments
-            WHERE id = $1
+            SELECT
+                a.id,
+                a.name,
+                c.email,
+                description,
+                cohort_id,
+                a.created_at,
+                a.updated_at
+            FROM assignments a
+            JOIN cohorts c ON c.id = a.cohort_id
+            WHERE a.id = $1
             "#,
             assignment_id
         )
@@ -121,9 +158,20 @@ impl Assignment {
         let assignment = sqlx::query_as!(
             Assignment,
             r#"
-            INSERT INTO assignments (name, description, cohort_id)
-            VALUES ($1, $2, $3)
-            RETURNING *
+            WITH a AS (
+                INSERT INTO assignments (name, description, cohort_id)
+                VALUES ($1, $2, $3)
+                RETURNING *
+            ) SELECT
+                a.id,
+                a.name,
+                c.email,
+                description,
+                cohort_id,
+                a.created_at,
+                a.updated_at
+            FROM a
+            JOIN cohorts c ON c.id = a.cohort_id
             "#,
             request.name,
             request.description,
@@ -142,10 +190,21 @@ impl Assignment {
         let assignment = sqlx::query_as!(
             Assignment,
             r#"
-            UPDATE assignments
-            SET name = $1, description = $2, cohort_id = $3
-            WHERE id = $4
-            RETURNING *
+            WITH a AS (
+                UPDATE assignments
+                SET name = $1, description = $2, cohort_id = $3
+                WHERE id = $4
+                RETURNING *
+            ) SELECT
+                a.id,
+                a.name,
+                c.email,
+                description,
+                cohort_id,
+                a.created_at,
+                a.updated_at
+            FROM a
+            JOIN cohorts c ON c.id = a.cohort_id
             "#,
             request.name,
             request.description,
