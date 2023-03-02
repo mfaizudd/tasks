@@ -10,6 +10,7 @@ pub struct Student {
     pub id: Uuid,
     pub name: String,
     pub number: String,
+    pub cohort_email: String,
     pub cohort_id: Uuid,
     pub created_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,
@@ -20,7 +21,16 @@ impl Student {
         let students = sqlx::query_as!(
             Student,
             r#"
-            SELECT * FROM students
+            SELECT
+                s.id,
+                s.name,
+                number,
+                c.email as cohort_email,
+                cohort_id,
+                s.created_at,
+                s.updated_at
+            FROM students s
+            JOIN cohorts c ON s.cohort_id = c.id
             ORDER BY $1 DESC
             LIMIT $2 OFFSET $3
             "#,
@@ -42,7 +52,17 @@ impl Student {
         let students = sqlx::query_as!(
             Student,
             r#"
-            SELECT * FROM students WHERE cohort_id = $1
+            SELECT
+                s.id,
+                s.name,
+                number,
+                c.email as cohort_email,
+                cohort_id,
+                s.created_at,
+                s.updated_at
+            FROM students s
+            JOIN cohorts c ON s.cohort_id = c.id
+            WHERE cohort_id = $1
             ORDER BY $2 DESC
             LIMIT $3 OFFSET $4
             "#,
@@ -61,7 +81,17 @@ impl Student {
         let student = sqlx::query_as!(
             Student,
             r#"
-            SELECT * FROM students WHERE id = $1
+            SELECT
+                s.id,
+                s.name,
+                number,
+                c.email as cohort_email,
+                cohort_id,
+                s.created_at,
+                s.updated_at
+            FROM students s
+            JOIN cohorts c ON s.cohort_id = c.id
+            WHERE s.id = $1
             "#,
             id
         )
@@ -80,9 +110,20 @@ impl Student {
         let student = sqlx::query_as!(
             Student,
             r#"
-            INSERT INTO students (name, number, cohort_id)
-            VALUES ($1, $2, $3)
-            RETURNING *
+            WITH s AS (
+                INSERT INTO students (name, number, cohort_id)
+                VALUES ($1, $2, $3)
+                RETURNING *
+            ) SELECT
+                s.id,
+                s.name,
+                number,
+                c.email as cohort_email,
+                cohort_id,
+                s.created_at,
+                s.updated_at
+            FROM s
+            JOIN cohorts c ON s.cohort_id = c.id
             "#,
             name,
             number,
@@ -104,10 +145,21 @@ impl Student {
         let student = sqlx::query_as!(
             Student,
             r#"
-            UPDATE students
-            SET name = $1, number = $2, cohort_id = $3
-            WHERE id = $4
-            RETURNING *
+            WITH s AS (
+                UPDATE students
+                SET name = $1, number = $2, cohort_id = $3
+                WHERE id = $4
+                RETURNING *
+            ) SELECT
+                s.id,
+                s.name,
+                number,
+                c.email as cohort_email,
+                cohort_id,
+                s.created_at,
+                s.updated_at
+            FROM s
+            JOIN cohorts c ON s.cohort_id = c.id
             "#,
             name,
             number,
@@ -120,19 +172,17 @@ impl Student {
         Ok(student)
     }
 
-    pub async fn delete(db: &PgPool, id: Uuid) -> Result<Student, sqlx::Error> {
-        let student = sqlx::query_as!(
-            Student,
+    pub async fn delete(db: &PgPool, id: Uuid) -> Result<(), sqlx::Error> {
+        sqlx::query!(
             r#"
             DELETE FROM students
             WHERE id = $1
-            RETURNING *
             "#,
             id
         )
         .fetch_one(db)
         .await?;
 
-        Ok(student)
+        Ok(())
     }
 }

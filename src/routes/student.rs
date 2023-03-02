@@ -22,8 +22,7 @@ pub async fn get_student(
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, ApiError> {
     let student = Student::find_one(&api_state.db_pool, id).await?;
-    let cohort = Cohort::find_one(&api_state.db_pool, student.cohort_id).await?;
-    if cohort.email != user.email {
+    if student.cohort_email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to view this student".to_string(),
         ));
@@ -64,11 +63,10 @@ pub async fn update_student(
     user: UserInfo,
     State(api_state): State<Arc<ApiState>>,
     Path(id): Path<Uuid>,
-    Json(student): Json<StudentRequest>,
+    Json(input): Json<StudentRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
-    Student::find_one(&api_state.db_pool, id).await?;
-    let cohort = Cohort::find_one(&api_state.db_pool, student.cohort_id).await?;
-    if cohort.email != user.email {
+    let student = Student::find_one(&api_state.db_pool, id).await?;
+    if student.cohort_email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to update this student".to_string(),
         ));
@@ -76,9 +74,9 @@ pub async fn update_student(
     let student = Student::update(
         &api_state.db_pool,
         id,
-        student.name,
-        student.number,
-        student.cohort_id,
+        input.name,
+        input.number,
+        input.cohort_id,
     )
     .await?;
     Ok(
@@ -93,8 +91,7 @@ pub async fn delete_student(
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, ApiError> {
     let student = Student::find_one(&api_state.db_pool, id).await?;
-    let cohort = Cohort::find_one(&api_state.db_pool, student.cohort_id).await?;
-    if cohort.email != user.email {
+    if student.cohort_email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to delete this student".to_string(),
         ));
