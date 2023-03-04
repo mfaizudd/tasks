@@ -1,4 +1,5 @@
 import Dashboard from "@/components/Dashboard";
+import { Loading } from "@/components/Loading";
 import { getAuthorizedApi } from "@/lib/api";
 import { Cohort, Wrapper } from "@/lib/entities";
 import { NextPage } from "next";
@@ -13,8 +14,10 @@ const CohortIndex: NextPage = () => {
         }
     ]
     const [cohorts, setCohorts] = useState<Cohort[]>(() => []);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const fetchCohorts = async () => {
+        setLoading(true);
         try {
             const api = await getAuthorizedApi();
             const response = await api.get<Wrapper<Cohort[]>>("/cohorts");
@@ -22,6 +25,8 @@ const CohortIndex: NextPage = () => {
             setCohorts(data)
         } catch (err) {
             console.log(err)
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -39,32 +44,35 @@ const CohortIndex: NextPage = () => {
 
     useEffect(() => {
         fetchCohorts();
-    }, [])
+    }, []);
+
     return (
         <Dashboard title="Cohorts" actions={actions}>
-            <div className="overflow-x-auto">
-                <table className="table w-full">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Name</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {cohorts.map((cohort, i) => (
-                            <tr key={cohort.id} className="hover">
-                                <th>{i + 1}</th>
-                                <td>{cohort.name}</td>
-                                <td className="flex gap-x-2">
-                                    <Link className="btn" href={`/cohorts/${cohort.id}`}>Edit</Link>
-                                    <button className="btn btn-accent" onClick={() => deleteCohort(cohort.id)}>Delete</button>
-                                </td>
+            {loading ? <Loading /> : (
+                <div className="overflow-x-auto">
+                    <table className="table w-full">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th></th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {cohorts.map((cohort, i) => (
+                                <tr key={cohort.id} className="hover">
+                                    <th>{i + 1}</th>
+                                    <td>{cohort.name}</td>
+                                    <td className="flex gap-x-2">
+                                        <Link className="btn" href={`/cohorts/${cohort.id}`}>Edit</Link>
+                                        <button className="btn btn-accent" onClick={() => deleteCohort(cohort.id)}>Delete</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </Dashboard>
     )
 }
