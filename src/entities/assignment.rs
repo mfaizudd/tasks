@@ -10,7 +10,7 @@ pub struct Assignment {
     pub id: Uuid,
     pub name: String,
     pub description: String,
-    pub email: String,
+    pub cohort_email: String,
     pub cohort_id: Uuid,
     pub created_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,
@@ -37,7 +37,7 @@ impl Assignment {
             SELECT
                 a.id,
                 a.name,
-                c.email,
+                c.email as cohort_email,
                 description,
                 cohort_id,
                 a.created_at,
@@ -70,7 +70,7 @@ impl Assignment {
             SELECT
                 a.id,
                 a.name,
-                c.email,
+                c.email as cohort_email,
                 description,
                 cohort_id,
                 a.created_at,
@@ -103,7 +103,7 @@ impl Assignment {
             SELECT
                 a.id,
                 a.name,
-                c.email,
+                c.email as cohort_email,
                 description,
                 cohort_id,
                 a.created_at,
@@ -138,7 +138,7 @@ impl Assignment {
             SELECT
                 a.id,
                 a.name,
-                c.email,
+                c.email as cohort_email,
                 description,
                 cohort_id,
                 a.created_at,
@@ -168,7 +168,7 @@ impl Assignment {
             ) SELECT
                 a.id,
                 a.name,
-                c.email,
+                c.email as cohort_email,
                 description,
                 cohort_id,
                 a.created_at,
@@ -201,7 +201,7 @@ impl Assignment {
             ) SELECT
                 a.id,
                 a.name,
-                c.email,
+                c.email as cohort_email,
                 description,
                 cohort_id,
                 a.created_at,

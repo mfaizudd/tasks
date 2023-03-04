@@ -35,7 +35,7 @@ pub async fn get_assignment(
     Path(assignment_id): Path<uuid::Uuid>,
 ) -> Result<impl IntoResponse, ApiError> {
     let assignment = Assignment::find_one(&state.db_pool, assignment_id).await?;
-    if assignment.email != user.email {
+    if assignment.cohort_email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to view this assignment".to_string(),
         ));
@@ -75,7 +75,7 @@ pub async fn update_assignment(
     Json(input): Json<AssignmentRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let assignment = Assignment::find_one(&state.db_pool, assignment_id).await?;
-    if assignment.email != user.email {
+    if assignment.cohort_email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to update this assignment".to_string(),
         ));
@@ -95,7 +95,7 @@ pub async fn delete_assignment(
     Path(assignment_id): Path<uuid::Uuid>,
 ) -> Result<impl IntoResponse, ApiError> {
     let assignment = Assignment::find_one(&state.db_pool, assignment_id).await?;
-    if assignment.email != user.email {
+    if assignment.cohort_email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to delete this assignment".to_string(),
         ));
