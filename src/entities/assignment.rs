@@ -141,10 +141,7 @@ impl Assignment {
         Ok(assignments)
     }
 
-    pub async fn find_one(
-        db: &PgPool,
-        assignment_id: Uuid,
-    ) -> Result<Assignment, sqlx::Error> {
+    pub async fn find_one(db: &PgPool, assignment_id: Uuid) -> Result<Assignment, sqlx::Error> {
         let assignment = sqlx::query_as!(
             Assignment,
             r#"
