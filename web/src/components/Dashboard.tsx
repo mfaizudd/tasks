@@ -31,7 +31,7 @@ const Dashboard: React.FC<Props> = ({ children, title, actions }) => {
         <Auth>
             <div className="drawer drawer-mobile">
                 <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col p-3">
+                <div className="drawer-content flex flex-col">
                     <label htmlFor="my-drawer-2" className="btn drawer-button lg:hidden">Menu</label>
                     <div className="w-full navbar bg-base-300">
                         <div className="flex-none lg:hidden">

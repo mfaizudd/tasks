@@ -58,7 +58,7 @@ const Assignments = () => {
                                 <td>{assignment.name}</td>
                                 <td>{assignment.cohort_name}</td>
                                 <td className="flex gap-x-2">
-                                    <Link className="btn" href={`/cohorts/${assignment.id}`}>Edit</Link>
+                                    <Link className="btn" href={`/assignments/${assignment.id}`}>Edit</Link>
                                     <button className="btn btn-accent" onClick={() => deleteCohort(assignment.id)}>Delete</button>
                                 </td>
                             </tr>

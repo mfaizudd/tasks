@@ -1,12 +1,11 @@
-import Dashboard from "@/components/Dashboard";
+import Dashboard from "@/components/Dashboard"
 import { Loading } from "@/components/Loading";
 import { getAuthorizedApi } from "@/lib/api";
-import { Cohort } from "@/lib/entities";
-import { NextPage } from "next";
+import { Assignment, Cohort, Wrapper } from "@/lib/entities";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-export const Create: NextPage = () => {
+const Edit = () => {
     const router = useRouter();
     const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
@@ -18,9 +17,16 @@ export const Create: NextPage = () => {
         setLoading(true);
         try {
             const api = await getAuthorizedApi();
-            const res = await api.get("/cohorts");
-            if (res.status === 200) {
-                setCohorts(res.data.data);
+            const assignmentRes = await api.get<Wrapper<Assignment>>(`/assignments/${router.query.id}`);
+            if (assignmentRes.status === 200) {
+                const assignment = assignmentRes.data.data;
+                setName(assignment.name);
+                setDescription(assignment.description);
+                setCohortId(assignment.cohort_id);
+            }
+            const cohortRes = await api.get("/cohorts");
+            if (cohortRes.status === 200) {
+                setCohorts(cohortRes.data.data);
             }
         } catch (error) {
             console.log(error);
@@ -32,8 +38,8 @@ export const Create: NextPage = () => {
     const submit = async () => {
         try {
             const api = await getAuthorizedApi();
-            const res = await api.post("/assignments", { name, description, cohort_id });
-            if (res.status === 201) {
+            const res = await api.put(`/assignments/${router.query.id}`, { name, description, cohort_id });
+            if (res.status === 200) {
                 router.push("/assignments");
             }
         } catch (error) {
@@ -48,7 +54,6 @@ export const Create: NextPage = () => {
     if (loading) {
         return <Loading />
     }
-
     return (
         <Dashboard>
             <div className="p-5 w-full flex justify-center">
@@ -69,4 +74,4 @@ export const Create: NextPage = () => {
     )
 }
 
-export default Create;
+export default Edit;
