@@ -65,6 +65,7 @@ const Assignments = () => {
                                     <td>{assignment.cohort_name}</td>
                                     <td className="flex gap-x-2">
                                         <Link className="btn" href={`/assignments/${assignment.id}`}>Edit</Link>
+                                        <Link className="btn" href={`/assignments/${assignment.id}/grading`}>Grading</Link>
                                         <button className="btn btn-accent" onClick={() => deleteCohort(assignment.id)}>Delete</button>
                                     </td>
                                 </tr>
