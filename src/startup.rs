@@ -10,7 +10,7 @@ use sqlx::{
     PgPool,
 };
 use std::{net::SocketAddr, sync::Arc};
-use tower_http::cors::CorsLayer;
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 use crate::{
     config::{DatabaseSettings, OauthSettings, RedisSettings, ServerSettings, Settings},
@@ -62,6 +62,7 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
                 .nest("/students", student_routes)
                 .nest("/assignments", assignment_routes),
         )
+        .layer(TraceLayer::new_for_http())
         .layer(cors_layer)
         .with_state(Arc::new(state));
 

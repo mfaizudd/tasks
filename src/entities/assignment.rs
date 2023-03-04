@@ -16,6 +16,18 @@ pub struct Assignment {
     pub updated_at: chrono::DateTime<Utc>,
 }
 
+#[derive(Serialize)]
+pub struct AssignmentResponse {
+    pub id: Uuid,
+    pub name: String,
+    pub description: String,
+    pub cohort_email: String,
+    pub cohort_name: String,
+    pub cohort_id: Uuid,
+    pub created_at: chrono::DateTime<Utc>,
+    pub updated_at: chrono::DateTime<Utc>,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct AssignmentScore {
     pub assignment_id: Uuid,
@@ -30,14 +42,15 @@ impl Assignment {
         db: &PgPool,
         email: String,
         pagination: PaginationDto,
-    ) -> Result<Vec<Assignment>, sqlx::Error> {
+    ) -> Result<Vec<AssignmentResponse>, sqlx::Error> {
         let assignments = sqlx::query_as!(
-            Assignment,
+            AssignmentResponse,
             r#"
             SELECT
                 a.id,
                 a.name,
                 c.email as cohort_email,
+                c.name as cohort_name,
                 description,
                 cohort_id,
                 a.created_at,

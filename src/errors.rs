@@ -87,6 +87,7 @@ impl IntoResponse for ApiError {
             ApiError::InternalError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
+        tracing::error!("Error: {:?}", self);
         let body: Response<()> = Response::error(self, "An error has occured".to_string(), vec![]);
         (status, Json(body)).into_response()
     }
