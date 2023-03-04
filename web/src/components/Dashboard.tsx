@@ -64,6 +64,9 @@ const Dashboard: React.FC<Props> = ({ children, title, actions }) => {
                             <Link href="/cohorts">Cohorts</Link>
                         </li>
                         <li>
+                            <Link href="/assignments">Assignments</Link>
+                        </li>
+                        <li>
                             <a href="#" onClick={() => signOut()}>Sign out</a>
                         </li>
                     </ul>
