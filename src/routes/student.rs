@@ -12,16 +12,16 @@ use crate::{
     dto::{StudentRequest, UserInfo},
     entities::{cohort::Cohort, student::Student},
     response::Response,
-    startup::ApiState,
+    startup::AppState,
     ApiError,
 };
 
 pub async fn get_student(
     user: UserInfo,
-    State(api_state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let student = Student::find_one(&api_state.db_pool, id).await?;
+    let student = Student::find_one(&state.db_pool, id).await?;
     if student.cohort_email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to view this student".to_string(),
@@ -37,17 +37,17 @@ pub async fn get_student(
 
 pub async fn create_student(
     user: UserInfo,
-    State(api_state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Json(student): Json<StudentRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let cohort = Cohort::find_one(&api_state.db_pool, student.cohort_id).await?;
+    let cohort = Cohort::find_one(&state.db_pool, student.cohort_id).await?;
     if cohort.email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to create a student in this cohort".to_string(),
         ));
     }
     let student = Student::create(
-        &api_state.db_pool,
+        &state.db_pool,
         student.name,
         student.number,
         student.cohort_id,
@@ -61,18 +61,18 @@ pub async fn create_student(
 
 pub async fn update_student(
     user: UserInfo,
-    State(api_state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Path(id): Path<Uuid>,
     Json(input): Json<StudentRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let student = Student::find_one(&api_state.db_pool, id).await?;
+    let student = Student::find_one(&state.db_pool, id).await?;
     if student.cohort_email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to update this student".to_string(),
         ));
     }
     let student = Student::update(
-        &api_state.db_pool,
+        &state.db_pool,
         id,
         input.name,
         input.number,
@@ -87,15 +87,15 @@ pub async fn update_student(
 
 pub async fn delete_student(
     user: UserInfo,
-    State(api_state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, ApiError> {
-    let student = Student::find_one(&api_state.db_pool, id).await?;
+    let student = Student::find_one(&state.db_pool, id).await?;
     if student.cohort_email != user.email {
         return Err(ApiError::AuthorizationError(
             "You are not authorized to delete this student".to_string(),
         ));
     }
-    Student::delete(&api_state.db_pool, id).await?;
+    Student::delete(&state.db_pool, id).await?;
     Ok(Response::new((), "Student deleted successfully.".to_string(), vec![]).json(StatusCode::OK))
 }

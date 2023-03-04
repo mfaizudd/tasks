@@ -1,23 +1,37 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
     Json,
 };
 use hyper::StatusCode;
 
 use crate::{
-    dto::{AssignmentRequest, UserInfo},
+    dto::{AssignmentRequest, PaginationDto, UserInfo},
     entities::{assignment::Assignment, cohort::Cohort},
     response::Response,
-    startup::ApiState,
+    startup::AppState,
     ApiError,
 };
 
+pub async fn list_assignments(
+    user: UserInfo,
+    State(state): State<Arc<AppState>>,
+    Query(pagination): Query<PaginationDto>,
+) -> Result<impl IntoResponse, ApiError> {
+    let assignments = Assignment::find(&state.db_pool, user.email, pagination).await?;
+    Ok(Response::new(
+        assignments,
+        "Assignments retrieved successfully".to_string(),
+        vec![],
+    )
+    .json(StatusCode::OK))
+}
+
 pub async fn get_assignment(
     user: UserInfo,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Path(assignment_id): Path<uuid::Uuid>,
 ) -> Result<impl IntoResponse, ApiError> {
     let assignment = Assignment::find_one(&state.db_pool, assignment_id).await?;
@@ -36,7 +50,7 @@ pub async fn get_assignment(
 
 pub async fn create_assignment(
     user: UserInfo,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Json(assignment): Json<AssignmentRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = Cohort::find_one(&state.db_pool, assignment.cohort_id).await?;
@@ -56,7 +70,7 @@ pub async fn create_assignment(
 
 pub async fn update_assignment(
     user: UserInfo,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Path(assignment_id): Path<uuid::Uuid>,
     Json(input): Json<AssignmentRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
@@ -77,7 +91,7 @@ pub async fn update_assignment(
 
 pub async fn delete_assignment(
     user: UserInfo,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Path(assignment_id): Path<uuid::Uuid>,
 ) -> Result<impl IntoResponse, ApiError> {
     let assignment = Assignment::find_one(&state.db_pool, assignment_id).await?;

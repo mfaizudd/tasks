@@ -11,12 +11,12 @@ use crate::{
     dto::{CohortRequest, PaginationDto, UserInfo},
     entities::{assignment::Assignment, cohort::Cohort, student::Student},
 };
-use crate::{response::Response, startup::ApiState, ApiError};
+use crate::{response::Response, startup::AppState, ApiError};
 
 pub async fn list_cohorts(
     user: UserInfo,
     Query(pagination): Query<PaginationDto>,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohorts = Cohort::find(&state.db_pool, user, pagination).await?;
     Ok(Response::new(cohorts, "Cohorts retrieved".to_string(), vec![]).json(StatusCode::OK))
@@ -26,7 +26,7 @@ pub async fn list_cohort_students(
     user: UserInfo,
     Path(cohort_id): Path<Uuid>,
     Query(pagination): Query<PaginationDto>,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = Cohort::find_one(&state.db_pool, cohort_id).await?;
     if cohort.email != user.email {
@@ -42,7 +42,7 @@ pub async fn list_cohort_assignments(
     user: UserInfo,
     Path(cohort_id): Path<Uuid>,
     Query(pagination): Query<PaginationDto>,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = Cohort::find_one(&state.db_pool, cohort_id).await?;
     if cohort.email != user.email {
@@ -59,7 +59,7 @@ pub async fn list_cohort_assignments(
 
 pub async fn get_cohort(
     Path(cohort_id): Path<Uuid>,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = Cohort::find_one(&state.db_pool, cohort_id).await?;
     Ok(Response::new(cohort, "Cohort retrieved".to_string(), vec![]).json(StatusCode::OK))
@@ -67,7 +67,7 @@ pub async fn get_cohort(
 
 pub async fn create_cohort(
     user_info: UserInfo,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Json(cohort_request): Json<CohortRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = Cohort::create(&state.db_pool, user_info, cohort_request.name).await?;
@@ -77,7 +77,7 @@ pub async fn create_cohort(
 pub async fn update_cohort(
     user_info: UserInfo,
     Path(cohort_id): Path<Uuid>,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
     Json(cohort_request): Json<CohortRequest>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = Cohort::find_one(&state.db_pool, cohort_id).await?;
@@ -93,7 +93,7 @@ pub async fn update_cohort(
 pub async fn delete_cohort(
     user_info: UserInfo,
     Path(cohort_id): Path<Uuid>,
-    State(state): State<Arc<ApiState>>,
+    State(state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = Cohort::find_one(&state.db_pool, cohort_id).await?;
     if cohort.email != user_info.email {

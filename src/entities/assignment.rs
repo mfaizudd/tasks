@@ -28,6 +28,7 @@ pub struct AssignmentScore {
 impl Assignment {
     pub async fn find(
         db: &PgPool,
+        email: String,
         pagination: PaginationDto,
     ) -> Result<Vec<Assignment>, sqlx::Error> {
         let assignments = sqlx::query_as!(
@@ -43,10 +44,12 @@ impl Assignment {
                 a.updated_at
             FROM assignments a
             JOIN cohorts c ON c.id = a.cohort_id
-            ORDER BY $1 DESC
-            LIMIT $2
-            OFFSET $3
+            WHERE c.email = $1
+            ORDER BY $2 DESC
+            LIMIT $3
+            OFFSET $4
             "#,
+            email,
             pagination.order_by(),
             pagination.limit(),
             pagination.offset()

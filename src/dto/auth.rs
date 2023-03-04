@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     config::OauthSettings,
     redis::{self, RedisPool},
-    startup::ApiState,
+    startup::AppState,
     ApiError,
 };
 
@@ -61,12 +61,12 @@ pub struct BearerToken {
 }
 
 #[async_trait]
-impl FromRequestParts<Arc<ApiState>> for Claims {
+impl FromRequestParts<Arc<AppState>> for Claims {
     type Rejection = ApiError;
 
     async fn from_request_parts(
         parts: &mut Parts,
-        state: &Arc<ApiState>,
+        state: &Arc<AppState>,
     ) -> Result<Self, Self::Rejection> {
         let reject = || ApiError::AuthorizationError("Unauthorized".to_string());
         let TypedHeader(Authorization(bearer)) =
@@ -123,12 +123,12 @@ pub async fn get_claims(
 }
 
 #[async_trait]
-impl FromRequestParts<Arc<ApiState>> for UserInfo {
+impl FromRequestParts<Arc<AppState>> for UserInfo {
     type Rejection = ApiError;
 
     async fn from_request_parts(
         parts: &mut Parts,
-        state: &Arc<ApiState>,
+        state: &Arc<AppState>,
     ) -> Result<Self, Self::Rejection> {
         let reject = || ApiError::AuthorizationError("Invalid bearer token".to_string());
         let TypedHeader(Authorization(bearer)) =
@@ -164,12 +164,12 @@ impl FromRequestParts<Arc<ApiState>> for UserInfo {
 }
 
 #[async_trait]
-impl FromRequestParts<Arc<ApiState>> for BearerToken {
+impl FromRequestParts<Arc<AppState>> for BearerToken {
     type Rejection = ApiError;
 
     async fn from_request_parts(
         parts: &mut Parts,
-        state: &Arc<ApiState>,
+        state: &Arc<AppState>,
     ) -> Result<Self, Self::Rejection> {
         let reject = || ApiError::AuthorizationError("Invalid bearer token".to_string());
         let TypedHeader(Authorization(bearer)) =

@@ -18,7 +18,7 @@ use crate::{
     routes,
 };
 
-pub struct ApiState {
+pub struct AppState {
     pub db_pool: Arc<PgPool>,
     pub oauth_settings: Arc<OauthSettings>,
     pub redis_pool: Arc<RedisPool>,
@@ -29,7 +29,7 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         format!("{}:{}", settings.server.host, settings.server.port).parse::<SocketAddr>()?;
     let db_pool = Arc::new(get_db_pool(settings.database).await?);
     let redis_pool = Arc::new(get_redis_pool(settings.redis).await?);
-    let state = ApiState {
+    let state = AppState {
         db_pool: db_pool.clone(),
         oauth_settings: Arc::new(settings.oauth),
         redis_pool: redis_pool.clone(),
@@ -49,6 +49,7 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         .route("/:id", put(routes::update_student))
         .route("/:id", delete(routes::delete_student));
     let assignment_routes = Router::new()
+        .route("/", get(routes::list_assignments))
         .route("/:id", get(routes::get_assignment))
         .route("/", post(routes::create_assignment))
         .route("/:id", put(routes::update_assignment))
