@@ -1,13 +1,13 @@
 import Dashboard from "@/components/Dashboard"
 import { Loading } from "@/components/Loading";
 import { getAuthorizedApi } from "@/lib/api";
-import { Assignment, Student, Wrapper } from "@/lib/entities";
+import { AssignmentScore, Wrapper } from "@/lib/entities";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 const Grading = () => {
     const router = useRouter();
-    const [students, setStudents] = useState<Student[]>([]);
+    const [students, setStudents] = useState<AssignmentScore[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     const fetchData = async () => {
@@ -15,11 +15,8 @@ const Grading = () => {
         try {
             const assignmentId = router.query.id;
             const api = await getAuthorizedApi();
-            const assignmentRes = await api.get<Wrapper<Assignment>>(`/assignments/${assignmentId}`);
-            const assignment = assignmentRes.data.data;
-            const studentsRes = await api.get<Wrapper<Student[]>>(`/cohorts/${assignment.cohort_id}/students`);
-            const students = studentsRes.data.data;
-            setStudents(students);
+            const res = await api.get<Wrapper<AssignmentScore[]>>(`/assignments/${assignmentId}/scores`);
+            setStudents(res.data.data);
         } catch (err) {
             console.log(err);
         } finally {
@@ -39,17 +36,32 @@ const Grading = () => {
                         <thead>
                             <tr>
                                 <th></th>
-                                <th>Number</th>
-                                <th>Name</th>
-                                <th></th>
+                                <th>Assignment</th>
+                                <th>Student Name</th>
+                                <th>Score</th>
                             </tr>
                         </thead>
                         <tbody>
                             {students.map((student, i) => (
-                                <tr key={student.id} className="hover">
+                                <tr key={`${student.assignment_id}${student.student_id}`} className="hover">
                                     <th>{i + 1}</th>
-                                    <td>{student.number}</td>
-                                    <td>{student.name}</td>
+                                    <td>{student.assignment_name}</td>
+                                    <td>{student.student_name}</td>
+                                    <td>
+                                        <input type="number"
+                                            min="0"
+                                            max="100"
+                                            className="input input-bordered w-20"
+                                            value={student.score}
+                                            onChange={(e) => {
+                                                if (Number(e.target.value) <= 100 && Number(e.target.value) >= 0) {
+                                                    const newStudents = [...students];
+                                                    newStudents[i].score = Number(e.target.value);
+                                                    setStudents(newStudents);
+                                                }
+                                            }}
+                                        />
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

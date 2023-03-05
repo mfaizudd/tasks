@@ -9,7 +9,7 @@ use hyper::StatusCode;
 
 use crate::{
     dto::{AssignmentRequest, PaginationDto, UserInfo},
-    entities::{assignment::Assignment, cohort::Cohort},
+    entities::{assignment::Assignment, cohort::Cohort, score::Score},
     response::Response,
     startup::AppState,
     ApiError,
@@ -46,6 +46,24 @@ pub async fn get_assignment(
         vec![],
     )
     .json(StatusCode::OK))
+}
+
+pub async fn list_assignment_scores(
+    user: UserInfo,
+    State(state): State<Arc<AppState>>,
+    Path(assignment_id): Path<uuid::Uuid>,
+) -> Result<impl IntoResponse, ApiError> {
+    let assignment = Assignment::find_one(&state.db_pool, assignment_id).await?;
+    if assignment.cohort_email != user.email {
+        return Err(ApiError::AuthorizationError(
+            "You are not authorized to view this assignment".to_string(),
+        ));
+    }
+    let scores = Score::find_by_asssignment(&state.db_pool, assignment_id).await?;
+    Ok(
+        Response::new(scores, "Scores retrieved successfully".to_string(), vec![])
+            .json(StatusCode::OK),
+    )
 }
 
 pub async fn create_assignment(

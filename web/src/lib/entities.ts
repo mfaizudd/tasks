@@ -26,6 +26,18 @@ export interface Assignment {
     updated_at: string;
 }
 
+export interface AssignmentScore {
+    assignment_id: string;
+    assignment_name: string;
+    cohort_id: string;
+    cohort_name: string;
+    student_id: string;
+    student_name: string;
+    score?: number;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface Wrapper<T> {
     data: T;
     error: any;

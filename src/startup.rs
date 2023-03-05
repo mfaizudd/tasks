@@ -53,7 +53,8 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         .route("/:id", get(routes::get_assignment))
         .route("/", post(routes::create_assignment))
         .route("/:id", put(routes::update_assignment))
-        .route("/:id", delete(routes::delete_assignment));
+        .route("/:id", delete(routes::delete_assignment))
+        .route("/:id/scores", get(routes::list_assignment_scores));
     let app = Router::new()
         .nest(
             "/api/v1",
