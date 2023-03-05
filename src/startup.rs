@@ -34,6 +34,7 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         oauth_settings: Arc::new(settings.oauth),
         redis_pool: redis_pool.clone(),
     };
+    sqlx::migrate!().run(&*db_pool).await?;
     let cors_layer = get_cors_layer(settings.server);
     let cohort_routes = Router::new()
         .route("/", get(routes::list_cohorts))
@@ -88,10 +89,11 @@ pub async fn get_db_pool(settings: DatabaseSettings) -> Result<PgPool, anyhow::E
         .username(&settings.username)
         .password(settings.password.expose_secret())
         .database(&settings.database);
+    tracing::info!("Connecting to Postgres...");
+    tracing::info!("Options: {:?}", options);
     let pool = PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(2))
-        .connect_with(options)
-        .await?;
+        .connect_lazy_with(options);
     Ok(pool)
 }
 

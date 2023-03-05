@@ -62,7 +62,7 @@ pub fn get_config(environment: &str) -> Result<Settings> {
     let settings = Config::builder()
         .add_source(File::from(base_file))
         .add_source(File::from(environment_file).required(false))
-        .add_source(Environment::with_prefix("tasks"))
+        .add_source(Environment::with_prefix("TASKS").separator("_"))
         .build()?
         .try_deserialize::<Settings>()?;
     Ok(settings)

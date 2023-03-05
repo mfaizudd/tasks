@@ -1,0 +1,10 @@
+web
+target
+Dockerfile
+docker-compose.yml
+configuration/local.yml
+docker_config
+.env
+.git
+.gitignore
+.dockerignore

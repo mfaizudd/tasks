@@ -86,22 +86,23 @@ pub async fn get_claims(
     let reject = || ApiError::AuthorizationError("Unauthorized".to_string());
     let jwks = redis::command(redis_pool, "jwks")
         .get()
-        .await
-        .map_err(|_| reject())?;
+        .await?;
     let jwks = match jwks {
         Some(jwks) => jwks,
         None => {
             let jwks = reqwest::get(&oauth_settings.jwks_url)
                 .await
-                .map_err(|_| reject())?
+                .map_err(|err| ApiError::InternalError(err.into()))?
                 .json::<JwkSet>()
                 .await
-                .map_err(|_| reject())?;
+                .map_err(|err| ApiError::InternalError(err.into()))?;
             redis::command(redis_pool, "jwks")
                 .set(&jwks)
-                .await?
+                .await
+                .map_err(|err| ApiError::InternalError(err.into()))?
                 .expire(Duration::days(1))
-                .await?;
+                .await
+                .map_err(|err| ApiError::InternalError(err.into()))?;
             jwks
         }
     };
@@ -111,7 +112,7 @@ pub async fn get_claims(
     let claims = match &jwk.algorithm {
         AlgorithmParameters::RSA(rsa) => {
             let decoding_key =
-                DecodingKey::from_rsa_components(&rsa.n, &rsa.e).map_err(|_| reject())?;
+                DecodingKey::from_rsa_components(&rsa.n, &rsa.e)?;
             let mut validation = Validation::new(jwk.common.algorithm.unwrap());
             validation.set_audience(&[&oauth_settings.audience]);
             validation.set_issuer(&[&oauth_settings.issuer]);

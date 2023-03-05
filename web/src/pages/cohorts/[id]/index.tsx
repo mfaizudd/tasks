@@ -40,7 +40,7 @@ const Edit: NextPage<Props> = ({ id }) => {
                 setName(res.data.data.name);
             }
             const studentsRes = await api.get(`/cohorts/${id}/students?page=${page}`);
-            if (studentsRes.data.data.length === 0) {
+            if (studentsRes.data.data.length === 0 && page > 1) {
                 setPage(page - 1);
                 return;
             }
