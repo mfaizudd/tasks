@@ -3,7 +3,7 @@ import { Loading } from "@/components/Loading";
 import { getAuthorizedApi } from "@/lib/api";
 import { Assignment, Cohort, Wrapper } from "@/lib/entities";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const Edit = () => {
     const router = useRouter();
@@ -13,7 +13,7 @@ const Edit = () => {
     const [cohorts, setCohorts] = useState<Cohort[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const api = await getAuthorizedApi();
@@ -33,7 +33,7 @@ const Edit = () => {
         } finally {
             setLoading(false);
         }
-    }
+    }, [router.query.id]);
 
     const submit = async () => {
         try {
@@ -49,7 +49,7 @@ const Edit = () => {
 
     useEffect(() => {
         fetchData();
-    }, [])
+    }, [fetchData])
 
     if (loading) {
         return <Loading />

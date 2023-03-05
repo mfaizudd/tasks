@@ -3,16 +3,16 @@ import { Loading } from "@/components/Loading";
 import { getAuthorizedApi } from "@/lib/api";
 import { Assignment, AssignmentScore, Wrapper } from "@/lib/entities";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const Grading = () => {
     const router = useRouter();
     const [students, setStudents] = useState<AssignmentScore[]>([]);
-    const [assignment, setAssignment] = useState<Assignment|null>(null);
+    const [assignment, setAssignment] = useState<Assignment | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [saving, setSaving] = useState<boolean>(false);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const assignmentId = router.query.id;
@@ -26,7 +26,7 @@ const Grading = () => {
         } finally {
             setLoading(false);
         }
-    }
+    }, [router.query.id]);
 
     const saveScore = async (score: AssignmentScore) => {
         setSaving(true);
@@ -46,7 +46,7 @@ const Grading = () => {
 
     useEffect(() => {
         fetchData();
-    }, [])
+    }, [fetchData])
 
     return (
         <Dashboard title={`Scores for assignment: ${assignment?.name}`}>
@@ -83,7 +83,7 @@ const Grading = () => {
                                                 }
                                             }}
                                         />
-                                        <button 
+                                        <button
                                             className={`btn btn-sm btn-primary ml-2 ${saving ? 'loading' : ''}`}
                                             onClick={() => saveScore(student)} disabled={saving}>
                                             Save

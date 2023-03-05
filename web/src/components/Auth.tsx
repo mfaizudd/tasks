@@ -19,7 +19,8 @@ const Auth: React.FC<Props> = ({ children }) => {
         } else {
             router.push("/")
         }
-    }, [])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [router])
     let content = <Loading />;
     if (user) {
         content = <>{children}</>;

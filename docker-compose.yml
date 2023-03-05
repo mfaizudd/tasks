@@ -14,6 +14,13 @@ services:
         - .env
     environment:
       ENVIRONMENT: local # will be used to load /configuration/{environment}.yml
+  tasks-web:
+    build:
+      context: ./web
+    ports:
+      - 3000:3000
+    env_file:
+      - ./web/.env.local
   db:
     image: postgres:15
     volumes:

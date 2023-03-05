@@ -16,7 +16,7 @@ export default function Home() {
         if (user !== null) {
             setUser(user)
         }
-    }, [])
+    }, [setUser])
     function signOut() {
         removeToken()
         removeRefreshToken()
@@ -31,7 +31,7 @@ export default function Home() {
                 <div className="hero-content text-center">
                     <div className="max-w-md">
                         <h1 className="text-5xl font-bold">Tasks</h1>
-                        <p className="py-6">Do your homework man! (or not, I'm not your mom)</p>
+                        <p className="py-6">Do your homework man! (or not, I&apos;m not your mom)</p>
                         {user !== null && <p className="p-2">Welcome {user.name}</p>}
                         <div className="flex gap-2 justify-center">
                             {user !== null && <Link href="/dashboard" className="btn btn-primary">Start doing some tasks</Link>}

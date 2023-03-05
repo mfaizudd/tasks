@@ -50,7 +50,7 @@ export default function Login({ auth_code }: Props) {
                 }
             })();
         }
-    }, [])
+    }, [auth_code, setUser, router])
     return (
         <Layout title="Login">
             <div className="hero min-h-screen bg-base-200">

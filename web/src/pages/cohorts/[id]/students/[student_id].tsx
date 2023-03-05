@@ -3,7 +3,7 @@ import { Loading } from "@/components/Loading";
 import { getAuthorizedApi } from "@/lib/api";
 import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Props {
     id?: string;
@@ -33,7 +33,7 @@ const Edit: NextPage<Props> = ({ id, student_id }) => {
     const [name, setName] = useState<string>("");
     const [number, setNumber] = useState<string>("");
     const [cohort_id, setCohortId] = useState<string>("");
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             const api = await getAuthorizedApi();
             const res = await api.get(`/students/${student_id}`);
@@ -46,7 +46,7 @@ const Edit: NextPage<Props> = ({ id, student_id }) => {
         } catch (err) {
             console.log(err)
         }
-    }
+    }, [student_id]);
     const submit = async () => {
         try {
             const api = await getAuthorizedApi();
@@ -64,7 +64,7 @@ const Edit: NextPage<Props> = ({ id, student_id }) => {
     }
     useEffect(() => {
         fetchData()
-    }, [])
+    }, [fetchData])
     return (
         <Dashboard>
             <div className="p-5 flex flex-col gap-3">

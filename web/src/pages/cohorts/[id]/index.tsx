@@ -5,7 +5,7 @@ import { Student } from "@/lib/entities";
 import { GetServerSideProps, NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Props {
     id?: string;
@@ -31,7 +31,7 @@ const Edit: NextPage<Props> = ({ id }) => {
     const [students, setStudents] = useState<Student[]>([]);
     const [name, setName] = useState<string>("");
     const [page, setPage] = useState<number>(1);
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const api = await getAuthorizedApi();
@@ -51,7 +51,7 @@ const Edit: NextPage<Props> = ({ id }) => {
         } catch (err) {
             console.log(err)
         }
-    }
+    }, [id, page]);
     const submit = async () => {
         try {
             const api = await getAuthorizedApi();
@@ -89,7 +89,7 @@ const Edit: NextPage<Props> = ({ id }) => {
 
     useEffect(() => {
         fetchData()
-    }, [page])
+    }, [fetchData])
     const actions = [
         {
             label: "Upload students",

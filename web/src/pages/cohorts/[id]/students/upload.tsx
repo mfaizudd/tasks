@@ -4,7 +4,7 @@ import { getAuthorizedApi } from "@/lib/api";
 import { Cohort, Wrapper } from "@/lib/entities";
 import { GetServerSideProps, NextPage } from "next";
 import { useRouter } from "next/router";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 interface Props {
     id?: string;
@@ -32,7 +32,7 @@ export const Add: NextPage<Props> = ({ id }) => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const api = await getAuthorizedApi();
@@ -45,7 +45,7 @@ export const Add: NextPage<Props> = ({ id }) => {
         } finally {
             setLoading(false);
         }
-    }
+    }, [id]);
 
     const submit = async () => {
         setSaving(true);
@@ -78,7 +78,7 @@ export const Add: NextPage<Props> = ({ id }) => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     if (loading) {
         return <Loading />;
