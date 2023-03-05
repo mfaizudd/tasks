@@ -1,6 +1,6 @@
 import Layout from '@/components/Layout'
 import { useAppContext } from '@/context/state'
-import { getUserInfo, removeToken } from '@/lib/api'
+import { getUserInfo, removeRefreshToken, removeToken } from '@/lib/api'
 import { oauthSignIn } from '@/lib/oauth'
 import Link from 'next/link'
 import { useEffect } from 'react'
@@ -19,6 +19,7 @@ export default function Home() {
     }, [])
     function signOut() {
         removeToken()
+        removeRefreshToken()
         setUser(null)
     }
     function signIn() {

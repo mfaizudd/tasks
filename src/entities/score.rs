@@ -43,6 +43,7 @@ impl Score {
             JOIN students s ON s.cohort_id = c.id
             LEFT JOIN assignment_scores sc ON sc.student_id = s.id AND sc.assignment_id = a.id
             WHERE a.id = $1
+            ORDER BY s.name
             "#,
             assignment_id
         )

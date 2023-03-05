@@ -18,6 +18,7 @@ pub struct Student {
 
 impl Student {
     pub async fn find(db: &PgPool, pagination: PaginationDto) -> Result<Vec<Student>, sqlx::Error> {
+        let order_by = pagination.sort_by.clone().unwrap_or_else(|| "name".to_string());
         let students = sqlx::query_as!(
             Student,
             r#"
@@ -31,10 +32,10 @@ impl Student {
                 s.updated_at
             FROM students s
             JOIN cohorts c ON s.cohort_id = c.id
-            ORDER BY $1 DESC
+            ORDER BY $1 ASC
             LIMIT $2 OFFSET $3
             "#,
-            pagination.order_by(),
+            order_by,
             pagination.limit(),
             pagination.offset()
         )
@@ -54,7 +55,7 @@ impl Student {
             r#"
             SELECT
                 s.id,
-                s.name,
+                s.name AS name,
                 number,
                 c.email as cohort_email,
                 cohort_id,
@@ -63,11 +64,10 @@ impl Student {
             FROM students s
             JOIN cohorts c ON s.cohort_id = c.id
             WHERE cohort_id = $1
-            ORDER BY $2 DESC
-            LIMIT $3 OFFSET $4
+            ORDER BY name ASC
+            LIMIT $2 OFFSET $3
             "#,
             cohort_id,
-            pagination.order_by(),
             pagination.limit(),
             pagination.offset()
         )
