@@ -83,47 +83,15 @@ impl Score {
         Ok(score)
     }
 
-    pub async fn create(pool: &PgPool, score: ScoreRequest) -> Result<Score, sqlx::Error> {
+    pub async fn upsert(pool: &PgPool, score: ScoreRequest) -> Result<Score, sqlx::Error> {
         let score = sqlx::query_as!(
             Score,
             r#"
             WITH sc AS (
                 INSERT INTO assignment_scores (assignment_id, student_id, score)
                 VALUES ($1, $2, $3)
-                RETURNING *
-            ) SELECT
-                a.id AS assignment_id,
-                a.name AS assignment_name,
-                c.id AS cohort_id,
-                c.name AS cohort_name,
-                s.id AS student_id,
-                s.name AS student_name,
-                sc.score AS "score?",
-                sc.created_at as "created_at?",
-                sc.updated_at as "updated_at?"
-            FROM sc
-            JOIN assignments a ON a.id = sc.assignment_id
-            JOIN cohorts c ON c.id = a.cohort_id
-            JOIN students s ON s.id = sc.student_id
-            "#,
-            score.assignment_id,
-            score.student_id,
-            score.score
-        )
-        .fetch_one(pool)
-        .await?;
-
-        Ok(score)
-    }
-
-    pub async fn update(pool: &PgPool, score: ScoreRequest) -> Result<Score, sqlx::Error> {
-        let score = sqlx::query_as!(
-            Score,
-            r#"
-            WITH sc AS (
-                UPDATE assignment_scores
+                ON CONFLICT (assignment_id, student_id) DO UPDATE
                 SET score = $3
-                WHERE assignment_id = $1 AND student_id = $2
                 RETURNING *
             ) SELECT
                 a.id AS assignment_id,

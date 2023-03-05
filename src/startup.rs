@@ -55,13 +55,18 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         .route("/:id", put(routes::update_assignment))
         .route("/:id", delete(routes::delete_assignment))
         .route("/:id/scores", get(routes::list_assignment_scores));
+    let score_routes = Router::new()
+        .route("/", get(routes::get_score))
+        .route("/", put(routes::save_score)) // Upsert
+        .route("/", delete(routes::delete_score));
     let app = Router::new()
         .nest(
             "/api/v1",
             Router::new()
                 .nest("/cohorts", cohort_routes)
                 .nest("/students", student_routes)
-                .nest("/assignments", assignment_routes),
+                .nest("/assignments", assignment_routes)
+                .nest("/scores", score_routes),
         )
         .layer(TraceLayer::new_for_http())
         .layer(cors_layer)

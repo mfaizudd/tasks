@@ -24,6 +24,19 @@ const Grading = () => {
         }
     }
 
+    const saveScore = async (score: AssignmentScore) => {
+        try {
+            const api = await getAuthorizedApi();
+            await api.put(`/scores`, {
+                assignment_id: score.assignment_id,
+                student_id: score.student_id,
+                score: score.score
+            })
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     useEffect(() => {
         fetchData();
     }, [])
@@ -36,7 +49,7 @@ const Grading = () => {
                         <thead>
                             <tr>
                                 <th></th>
-                                <th>Assignment</th>
+                                <th>Cohort</th>
                                 <th>Student Name</th>
                                 <th>Score</th>
                             </tr>
@@ -45,7 +58,7 @@ const Grading = () => {
                             {students.map((student, i) => (
                                 <tr key={`${student.assignment_id}${student.student_id}`} className="hover">
                                     <th>{i + 1}</th>
-                                    <td>{student.assignment_name}</td>
+                                    <td>{student.cohort_name}</td>
                                     <td>{student.student_name}</td>
                                     <td>
                                         <input type="number"
@@ -61,6 +74,11 @@ const Grading = () => {
                                                 }
                                             }}
                                         />
+                                        <button 
+                                            className="btn btn-sm btn-primary ml-2"
+                                            onClick={() => saveScore(student)}>
+                                            Save
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
