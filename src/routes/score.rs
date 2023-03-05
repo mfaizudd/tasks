@@ -11,7 +11,8 @@ use crate::{
     dto::{ScoreQuery, ScoreRequest, UserInfo},
     entities::{assignment::Assignment, score::Score, student::Student},
     response::Response,
-    ApiError, startup::AppState,
+    startup::AppState,
+    ApiError,
 };
 
 #[axum_macros::debug_handler]
