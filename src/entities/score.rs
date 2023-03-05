@@ -132,7 +132,7 @@ impl Score {
             assignment_id,
             student_id
         )
-        .fetch_one(pool)
+        .execute(pool)
         .await?;
 
         Ok(())

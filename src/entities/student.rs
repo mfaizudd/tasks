@@ -223,7 +223,7 @@ impl Student {
             "#,
             id
         )
-        .fetch_one(db)
+        .execute(db)
         .await?;
 
         Ok(())

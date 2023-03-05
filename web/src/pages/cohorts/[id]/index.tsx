@@ -40,7 +40,7 @@ const Edit: NextPage<Props> = ({ id }) => {
             }
             const studentsRes = await api.get(`/cohorts/${id}/students`);
             if (studentsRes.status === 200) {
-                setStudents(studentsRes.data.data);
+                setStudents([...studentsRes.data.data]);
                 setLoading(false);
             }
         } catch (err) {
@@ -64,7 +64,7 @@ const Edit: NextPage<Props> = ({ id }) => {
             try {
                 const api = await getAuthorizedApi();
                 await api.delete(`/students/${id}`);
-                fetchData();
+                await fetchData();
             } catch (err) {
                 console.log(err)
             }
