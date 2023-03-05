@@ -1,14 +1,15 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::{Json, Path, Query, State},
+    extract::{Json, Multipart, Path, Query, State},
     response::IntoResponse,
 };
+use csv::Reader;
 use hyper::StatusCode;
 use uuid::Uuid;
 
 use crate::{
-    dto::{CohortRequest, PaginationDto, UserInfo},
+    dto::{CohortRequest, PaginationDto, StudentRequest, UserInfo},
     entities::{assignment::Assignment, cohort::Cohort, student::Student},
 };
 use crate::{response::Response, startup::AppState, ApiError};
@@ -72,6 +73,62 @@ pub async fn create_cohort(
 ) -> Result<impl IntoResponse, ApiError> {
     let cohort = Cohort::create(&state.db_pool, user_info, cohort_request.name).await?;
     Ok(Response::new(cohort, "Cohort created".to_string(), vec![]).json(StatusCode::CREATED))
+}
+
+pub async fn upload_students(
+    user: UserInfo,
+    State(state): State<Arc<AppState>>,
+    Path(cohort_id): Path<Uuid>,
+    mut payload: Multipart,
+) -> Result<impl IntoResponse, ApiError> {
+    let cohort = Cohort::find_one(&state.db_pool, cohort_id).await?;
+    if cohort.email != user.email {
+        return Err(ApiError::AuthorizationError(
+            "You are not authorized to upload students to this cohort".to_string(),
+        ));
+    }
+    let mut students: Vec<StudentRequest> = vec![];
+    while let Some(field) = payload
+        .next_field()
+        .await
+        .map_err(|_| ApiError::BadRequest("Error parsing payload".to_string()))?
+    {
+        let content_type = field
+            .content_type()
+            .ok_or_else(|| ApiError::BadRequest("Missing content type".to_string()))?;
+        if content_type != "multipart/form-data" {
+            return Err(ApiError::BadRequest("Invalid content type".to_string()));
+        }
+        let name = field
+            .name()
+            .ok_or_else(|| ApiError::BadRequest("Error parsing payload".to_string()))?;
+        if name != "students" {
+            return Err(ApiError::BadRequest("Invalid field name".to_string()));
+        }
+        let bytes = field
+            .bytes()
+            .await
+            .map_err(|_| ApiError::BadRequest("Error parsing payload".to_string()))?;
+        let mut reader = Reader::from_reader(bytes.as_ref());
+        while let Some(record) = reader.records().next() {
+            let record =
+                record.map_err(|_| ApiError::BadRequest("Error parsing payload".to_string()))?;
+            if record.len() != 2 {
+                return Err(ApiError::BadRequest("Invalid number of fields".to_string()));
+            }
+            let student = StudentRequest {
+                cohort_id,
+                number: record[0].to_string(),
+                name: record[1].to_string(),
+            };
+            students.push(student);
+        }
+    }
+    let students = Student::batch_create(&state.db_pool, students).await?;
+    Ok(
+        Response::new(students, "Students created successfully".into(), vec![])
+            .json(StatusCode::CREATED),
+    )
 }
 
 pub async fn update_cohort(

@@ -42,6 +42,7 @@ pub async fn run(settings: Settings) -> Result<(), anyhow::Error> {
         .route("/:id", put(routes::update_cohort))
         .route("/:id", delete(routes::delete_cohort))
         .route("/:id/students", get(routes::list_cohort_students))
+        .route("/:id/students/upload", post(routes::upload_students))
         .route("/:id/assignments", get(routes::list_cohort_assignments));
     let student_routes = Router::new()
         .route("/:id", get(routes::get_student))

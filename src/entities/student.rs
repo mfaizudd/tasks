@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::dto::PaginationDto;
+use crate::dto::{PaginationDto, StudentRequest};
 
 #[derive(Serialize, Deserialize)]
 pub struct Student {
@@ -133,6 +133,49 @@ impl Student {
         .await?;
 
         Ok(student)
+    }
+
+    pub async fn batch_create(
+        db: &PgPool,
+        students: Vec<StudentRequest>,
+    ) -> Result<Vec<Student>, sqlx::Error> {
+        let mut tx = db.begin().await?;
+
+        let mut students = students
+            .into_iter()
+            .map(|student| {
+                sqlx::query_as!(
+                    Student,
+                    r#"
+                    WITH s AS (
+                        INSERT INTO students (name, number, cohort_id)
+                        VALUES ($1, $2, $3)
+                        RETURNING *
+                    ) SELECT
+                        s.id,
+                        s.name,
+                        number,
+                        c.email as cohort_email,
+                        cohort_id,
+                        s.created_at,
+                        s.updated_at
+                    FROM s
+                    JOIN cohorts c ON s.cohort_id = c.id
+                    "#,
+                    student.name,
+                    student.number,
+                    student.cohort_id
+                )
+            })
+            .collect::<Vec<_>>();
+
+        while let Some(student) = students.pop() {
+            student.fetch_one(&mut tx).await?;
+        }
+
+        tx.commit().await?;
+
+        Ok(vec![])
     }
 
     pub async fn update(
