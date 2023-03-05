@@ -32,6 +32,7 @@ export interface AssignmentScore {
     cohort_id: string;
     cohort_name: string;
     student_id: string;
+    student_number: string;
     student_name: string;
     score?: number;
     created_at?: string;

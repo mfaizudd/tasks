@@ -50,6 +50,7 @@ const Grading = () => {
                             <tr>
                                 <th></th>
                                 <th>Cohort</th>
+                                <th>Number</th>
                                 <th>Student Name</th>
                                 <th>Score</th>
                             </tr>
@@ -59,6 +60,7 @@ const Grading = () => {
                                 <tr key={`${student.assignment_id}${student.student_id}`} className="hover">
                                     <th>{i + 1}</th>
                                     <td>{student.cohort_name}</td>
+                                    <td>{student.student_number}</td>
                                     <td>{student.student_name}</td>
                                     <td>
                                         <input type="number"
