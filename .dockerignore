@@ -8,3 +8,4 @@ docker_config
 .git
 .gitignore
 .dockerignore
+README.md
