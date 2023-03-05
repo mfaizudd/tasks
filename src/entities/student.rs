@@ -18,7 +18,10 @@ pub struct Student {
 
 impl Student {
     pub async fn find(db: &PgPool, pagination: PaginationDto) -> Result<Vec<Student>, sqlx::Error> {
-        let order_by = pagination.sort_by.clone().unwrap_or_else(|| "name".to_string());
+        let order_by = pagination
+            .sort_by
+            .clone()
+            .unwrap_or_else(|| "name".to_string());
         let students = sqlx::query_as!(
             Student,
             r#"
