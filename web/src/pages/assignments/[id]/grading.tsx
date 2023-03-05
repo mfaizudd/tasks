@@ -1,20 +1,24 @@
 import Dashboard from "@/components/Dashboard"
 import { Loading } from "@/components/Loading";
 import { getAuthorizedApi } from "@/lib/api";
-import { AssignmentScore, Wrapper } from "@/lib/entities";
+import { Assignment, AssignmentScore, Wrapper } from "@/lib/entities";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 const Grading = () => {
     const router = useRouter();
     const [students, setStudents] = useState<AssignmentScore[]>([]);
+    const [assignment, setAssignment] = useState<Assignment|null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [saving, setSaving] = useState<boolean>(false);
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const assignmentId = router.query.id;
             const api = await getAuthorizedApi();
+            const assignmentRes = await api.get<Wrapper<Assignment>>(`/assignments/${assignmentId}`);
+            setAssignment(assignmentRes.data.data);
             const res = await api.get<Wrapper<AssignmentScore[]>>(`/assignments/${assignmentId}/scores`);
             setStudents(res.data.data);
         } catch (err) {
@@ -25,6 +29,7 @@ const Grading = () => {
     }
 
     const saveScore = async (score: AssignmentScore) => {
+        setSaving(true);
         try {
             const api = await getAuthorizedApi();
             await api.put(`/scores`, {
@@ -34,6 +39,8 @@ const Grading = () => {
             })
         } catch (err) {
             console.log(err);
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -42,7 +49,7 @@ const Grading = () => {
     }, [])
 
     return (
-        <Dashboard>
+        <Dashboard title={`Scores for assignment: ${assignment?.name}`}>
             {loading ? <Loading /> : (
                 <div className="overflow-x-auto">
                     <table className="table w-full">
@@ -77,8 +84,8 @@ const Grading = () => {
                                             }}
                                         />
                                         <button 
-                                            className="btn btn-sm btn-primary ml-2"
-                                            onClick={() => saveScore(student)}>
+                                            className={`btn btn-sm btn-primary ml-2 ${saving ? 'loading' : ''}`}
+                                            onClick={() => saveScore(student)} disabled={saving}>
                                             Save
                                         </button>
                                     </td>
