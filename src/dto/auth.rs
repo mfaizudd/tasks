@@ -84,9 +84,7 @@ pub async fn get_claims(
     token: &str,
 ) -> Result<Claims, ApiError> {
     let reject = || ApiError::AuthorizationError("Unauthorized".to_string());
-    let jwks = redis::command(redis_pool, "jwks")
-        .get()
-        .await?;
+    let jwks = redis::command(redis_pool, "jwks").get().await?;
     let jwks = match jwks {
         Some(jwks) => jwks,
         None => {
@@ -111,8 +109,7 @@ pub async fn get_claims(
     let jwk = jwks.find(&kid).ok_or_else(reject)?;
     let claims = match &jwk.algorithm {
         AlgorithmParameters::RSA(rsa) => {
-            let decoding_key =
-                DecodingKey::from_rsa_components(&rsa.n, &rsa.e)?;
+            let decoding_key = DecodingKey::from_rsa_components(&rsa.n, &rsa.e)?;
             let mut validation = Validation::new(jwk.common.algorithm.unwrap());
             validation.set_audience(&[&oauth_settings.audience]);
             validation.set_issuer(&[&oauth_settings.issuer]);
