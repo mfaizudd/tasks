@@ -76,6 +76,10 @@ const Edit: NextPage<Props> = ({ id }) => {
     }, [])
     const actions = [
         {
+            label: "Upload students",
+            href: `/cohorts/${id}/students/upload`,
+        },
+        {
             label: "Add student",
             href: `/cohorts/${id}/students/add`,
         }

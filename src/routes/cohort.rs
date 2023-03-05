@@ -93,12 +93,6 @@ pub async fn upload_students(
         .await
         .map_err(|_| ApiError::BadRequest("Error parsing payload".to_string()))?
     {
-        let content_type = field
-            .content_type()
-            .ok_or_else(|| ApiError::BadRequest("Missing content type".to_string()))?;
-        if content_type != "multipart/form-data" {
-            return Err(ApiError::BadRequest("Invalid content type".to_string()));
-        }
         let name = field
             .name()
             .ok_or_else(|| ApiError::BadRequest("Error parsing payload".to_string()))?;
