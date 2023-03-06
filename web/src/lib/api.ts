@@ -1,11 +1,13 @@
 import { User } from "@/context/state";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
+import getConfig from "next/config";
 import { Claims, refreshToken } from "./oauth";
 
 export function getApi() {
+    const { publicRuntimeConfig } = getConfig();
     return axios.create({
-        baseURL: process.env.NEXT_PUBLIC_API_URL,
+        baseURL: publicRuntimeConfig.api_url,
         headers: {
             "Content-Type": "application/json",
         }
@@ -13,6 +15,7 @@ export function getApi() {
 }
 
 export async function getAuthorizedApi() {
+    const { publicRuntimeConfig } = getConfig();
     let token = getToken();
     try {
         const claims = jwt_decode<Claims>(token ?? "");
@@ -27,7 +30,7 @@ export async function getAuthorizedApi() {
         console.log(error);
     }
     return axios.create({
-        baseURL: process.env.NEXT_PUBLIC_API_URL,
+        baseURL: publicRuntimeConfig.api_url,
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`

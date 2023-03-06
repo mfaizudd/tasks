@@ -1,6 +1,7 @@
 import sha256 from "crypto-js/sha256";
 import Base64 from "crypto-js/enc-base64";
 import axios from "axios";
+import getConfig from "next/config";
 
 export interface Claims {
     iss: string,
@@ -24,16 +25,17 @@ function randomstring(length: number) {
     const charactersLength = characters.length;
     let counter = 0;
     while (counter < length) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      counter += 1;
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        counter += 1;
     }
     return result;
 }
 
 export function oauthSignIn() {
-    const authUrl = process.env.NEXT_PUBLIC_AUTHORIZE_URL;
-    const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-    const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI;
+    const { publicRuntimeConfig } = getConfig();
+    const authUrl = publicRuntimeConfig.authorize_url;
+    const clientId = publicRuntimeConfig.client_id;
+    const redirectUri = publicRuntimeConfig.redirect_uri;
     const scope = "openid+profile+email";
     const code_verifier = randomstring(128);
     setCodeVerifier(code_verifier);
@@ -56,9 +58,10 @@ export function removeCodeVerifier() {
 }
 
 export async function exchangeCodeForToken(code: string, code_verifier: string) {
-    const tokenUrl = process.env.NEXT_PUBLIC_TOKEN_URL ?? "";
-    const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-    const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI;
+    const { publicRuntimeConfig } = getConfig();
+    const tokenUrl = publicRuntimeConfig.token_url ?? "";
+    const clientId = publicRuntimeConfig.client_id;
+    const redirectUri = publicRuntimeConfig.redirect_uri;
     const body = `grant_type=authorization_code&code=${code}&code_verifier=${code_verifier}&redirect_uri=${redirectUri}&client_id=${clientId}`;
     const response = await axios.post<TokenResponse>(tokenUrl, body, {
         headers: {
@@ -69,9 +72,10 @@ export async function exchangeCodeForToken(code: string, code_verifier: string) 
     return response.data;
 }
 
-export function refreshToken(refresh_token: string|null) {
-    const tokenUrl = process.env.NEXT_PUBLIC_TOKEN_URL ?? "";
-    const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+export function refreshToken(refresh_token: string | null) {
+    const { publicRuntimeConfig } = getConfig();
+    const tokenUrl = publicRuntimeConfig.token_url ?? "";
+    const clientId = publicRuntimeConfig.client_id;
     const body = {
         grant_type: "refresh_token",
         refresh_token: refresh_token,
