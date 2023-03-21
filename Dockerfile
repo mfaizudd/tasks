@@ -1,5 +1,6 @@
 FROM rust AS chef
 WORKDIR /tasks
+ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 RUN cargo install cargo-chef
 
 FROM chef AS planner
@@ -19,6 +20,7 @@ RUN apt-get update -y \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /tasks/target/release/tasks /usr/local/bin/tasks
 COPY ./migrations ./migrations
 COPY ./configuration ./configuration
