@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-    branches:
-      - 'ci/build'
 
 env:
   TASKS_WEB_CLIENT_ID: ${{ secrets.CLIENT_ID }}
@@ -50,7 +48,6 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=sha
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
